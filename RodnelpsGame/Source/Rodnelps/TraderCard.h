@@ -4,9 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DataTable.h"
 #include "TraderCard.generated.h"
 
 
+USTRUCT(BlueprintType)
+struct RODNELPS_API FTraderSettings : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+		int32 ReqWhite = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+		int32 ReqBlue = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+		int32 ReqGreen = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+		int32 ReqRed = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+		int32 ReqBlack = 0;
+};
 
 UCLASS()
 class RODNELPS_API ATraderCard : public AActor
@@ -28,15 +49,8 @@ public:
 	UFUNCTION()
 	void OnSelected(AActor* Target, FKey ButtonPressed);
 
-private:
-	struct TraderRequirements
-	{
-		int WhiteCards;
-		int BlueCards;
-		int GreenCards;
-		int RedCards;
-		int BlackCards;
-	};
+	void SetTraderInfo(FTraderSettings* TraderInfo);
 
-	TraderRequirements m_TraderRequirements;
+private:
+	FTraderSettings* m_TraderSettings;
 };

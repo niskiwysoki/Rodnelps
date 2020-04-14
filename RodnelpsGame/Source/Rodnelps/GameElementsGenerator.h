@@ -6,6 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "GameElementsGenerator.generated.h"
 
+class UDataTable;
+class ATraderCard;
+class ACard;
+
 UCLASS()
 class RODNELPS_API AGameElementsGenerator : public AActor
 {
@@ -19,8 +23,25 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void generateTraders(float distanceBetweenTraders);
+
+	void generateDecks(float cardHeightDiffrence, float distanceBetweenDecks);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+private:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CardTables, meta = (AllowPrivateAccess = "true"))
+	TArray<UDataTable*> m_CardTablesArray;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = TraderTables, meta = (AllowPrivateAccess = "true"))
+	UDataTable* m_TraderCards;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = CardTables, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ACard> m_CardToSpawn;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = TraderTables, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ATraderCard> m_TraderToSpawn;
 };

@@ -4,28 +4,49 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/DataTable.h"
 #include "Card.generated.h"
 
-enum class ECardColor
+UENUM(BlueprintType)
+enum class ECardColor : uint8
 {
-	WHITE,
-	BLUE,
-	GREEN,
-	RED,
-	BLACK,
-	MAX_COLORS
+	WHITE UMETA(DisplayName = "WHITE"), 
+	BLUE  UMETA(DisplayName = "BLUE"), 
+	GREEN  UMETA(DisplayName = "GREEN"), 
+	RED  UMETA(DisplayName = "RED"),
+	BLACK  UMETA(DisplayName = "BLACK"),
+	MAX_COLORS UMETA(DisplayName = "NumOfColors"),
 };
 
-struct Requirments
+USTRUCT(BlueprintType)
+struct RODNELPS_API FCardSettings : public FTableRowBase
 {
-	int WhiteColors;
-	int BlueColors;
-	int GreenColors;
-	int RedColors;
-	int BlackColors;
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 VictoryPoints = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	ECardColor CardColor = ECardColor::WHITE;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 ReqWhite = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 ReqBlue = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 ReqGreen = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 ReqRed = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 ReqBlack = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CardInfo")
+	int32 CardTier = 1;
 };
-
-
 
 UCLASS()
 class RODNELPS_API ACard : public AActor
@@ -47,14 +68,9 @@ public:
 	UFUNCTION()
 	void OnSelected(AActor* Target, FKey ButtonPressed);
 
-private:
+	void SetCardInfo(FCardSettings* CardInfo);
 
-	struct CardInfo
-	{
-		int m_VictoryPoints;
-		ECardColor m_CardColor;
-		Requirments m_Requirements;
-		int m_CardTier;			// from 1 do 3;
-	};
-	CardInfo m_CardInfo;
+private:
+	FCardSettings* m_CardSettings;
+
 };
