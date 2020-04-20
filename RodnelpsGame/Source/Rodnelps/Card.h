@@ -66,11 +66,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void OnSelected(AActor* Target, FKey ButtonPressed);
+	void onSelected(AActor* Target, FKey ButtonPressed);
 
-	void SetCardInfo(FCardSettings* CardInfo);
+	void setCardInfo(FCardSettings* CardInfo);
 
 private:
 	FCardSettings* m_CardSettings;
 
+	//FVector m_DesiredLocation;
+	//FRotator m_DesiredRotation;
+	//float m_DesiredLocRotDelay;
 };

@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Token.generated.h"
 
-enum class ETokenColor
+enum class ETokenColor : int32
 {
 	WHITE,
 	BLUE,
@@ -34,10 +34,13 @@ protected:
 	UFUNCTION()
 	void OnSelected(AActor* Target, FKey ButtonPressed);
 
+	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
+	void setColor(ETokenColor tokenColor);
 private:
-	ETokenColor m_color;
+	ETokenColor m_Color;
 };

@@ -20,7 +20,7 @@ APlayerPawn::APlayerPawn()
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
 	Camera->SetupAttachment(RootComponent);
 	Camera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
-	CameraMovementSpeed = 400;
+	CameraMovementSpeed = 800;
 }
 
 // Called when the game starts or when spawned
