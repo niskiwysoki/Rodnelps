@@ -73,7 +73,4 @@ public:
 private:
 	FCardSettings* m_CardSettings;
 
-	//FVector m_DesiredLocation;
-	//FRotator m_DesiredRotation;
-	//float m_DesiredLocRotDelay;
 };

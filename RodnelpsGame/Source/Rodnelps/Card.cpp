@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Card.h"
+#include "RodnelpsGameState.h"
+#include "RodnelpsPlayerState.h"
+#include "InterpolationManager.h"
+#include "Engine/TargetPoint.h"
 
 // Sets default values
 ACard::ACard()
@@ -10,8 +13,6 @@ ACard::ACard()
 	PrimaryActorTick.bCanEverTick = true;
 	m_CardSettings = nullptr;
 
-	//m_InterpolationSpeed = 5.f;
-	//m_DesiredLocRotDelay = 10.f;
 }
 
 // Called when the game starts or when spawned
@@ -19,19 +20,29 @@ void ACard::BeginPlay()
 {
 	Super::BeginPlay();
 	m_CardSettings = new FCardSettings();
-	//m_DesiredLocation = GetActorLocation();		// in begin it must be
-	//m_DesiredRotation = GetActorRotation();
 
 	OnClicked.AddDynamic(this, &ACard::onSelected);
 }
 
 void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 {
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
+	if (activePlayer->GetPawn()->IsLocallyControlled())
+	{
+		gamestate->GetInterpolationManager()->setDesiredLocation(this, GetActorLocation() + FVector(0.f, 0.f, 500.f),0.f);
+		this->m_CardSettings->CardColor;
+		TArray<ATargetPoint*> cardsTargetPoints = activePlayer->getPlayerBoard()->getCardTargetPoints();
+		ATargetPoint* desiredPoint = cardsTargetPoints[(int32)this->m_CardSettings->CardColor];
+		gamestate->GetInterpolationManager()->setDesiredLocation(this, desiredPoint->GetActorLocation(), 0.f);
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("Card location: %s"), *this->GetActorLocation().ToString())
-	UE_LOG(LogTemp, Warning, TEXT("Info: VP %d; CC %d; RW %d; RB %d; RG %d; RR %d; RB %d; CT %d"), m_CardSettings->VictoryPoints, m_CardSettings->CardColor, m_CardSettings->ReqWhite, m_CardSettings->ReqBlue, m_CardSettings->ReqGreen, m_CardSettings->ReqRed, m_CardSettings->ReqBlack, m_CardSettings->CardTier)
-
+	UE_LOG(LogTemp, Warning, TEXT("Info: VP %d; CC %d; RW %d; RB %d; RG %d; RR %d; RB %d; CT %d"), 
+		m_CardSettings->VictoryPoints, m_CardSettings->CardColor, m_CardSettings->ReqWhite, m_CardSettings->ReqBlue, 
+		m_CardSettings->ReqGreen, m_CardSettings->ReqRed, m_CardSettings->ReqBlack, m_CardSettings->CardTier)
+	
 }
-
 
 void ACard::setCardInfo(FCardSettings* CardInfo)
 {

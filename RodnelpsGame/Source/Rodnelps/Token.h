@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Token.generated.h"
 
+class IOwnershipInterface;
+
 enum class ETokenColor : int32
 {
 	WHITE,
@@ -27,6 +29,8 @@ public:
 	// Sets default values for this actor's properties
 	AToken();
 
+	bool isTaken();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -34,13 +38,18 @@ protected:
 	UFUNCTION()
 	void OnSelected(AActor* Target, FKey ButtonPressed);
 
-	
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
 	void setColor(ETokenColor tokenColor);
+
+	ETokenColor getColor();
+
+	void setOwner(IOwnershipInterface* newOwner);
+
 private:
 	ETokenColor m_Color;
+	bool m_IsTaken;
+	IOwnershipInterface* m_Owner;
 };

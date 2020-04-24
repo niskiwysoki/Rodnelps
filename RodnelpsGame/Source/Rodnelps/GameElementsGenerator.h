@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "OwnershipInterface.h"
 #include "GameElementsGenerator.generated.h"
 
 class UDataTable;
@@ -12,8 +13,9 @@ class ACard;
 class AToken;
 class AInterpolationManager;
 
+
 UCLASS()
-class RODNELPS_API AGameElementsGenerator : public AActor
+class RODNELPS_API AGameElementsGenerator : public AActor, public IOwnershipInterface
 {
 	GENERATED_BODY()
 	
@@ -56,6 +58,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InterpolationManager", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AInterpolationManager> m_InterpolationManagerToSpawn;
 	
-
 	TArray<TArray<ACard*>> m_DecksArray;
+
+	TArray<TArray<AToken*>> m_TokenStacsArray;
 };

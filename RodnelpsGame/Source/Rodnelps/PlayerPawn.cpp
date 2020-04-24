@@ -48,9 +48,6 @@ void APlayerPawn::Tick(float DeltaTime)
 void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	//TODO Click bind input
-	//InputComponent->BindAction("Click", IE_Pressed, this, &APlayerPawn::StartGrowing);
 	
 	// Respond every frame to the values of our two movement axes, "MoveX" and "MoveY".
 	InputComponent->BindAxis("MoveX", this, &APlayerPawn::Move_XAxis);

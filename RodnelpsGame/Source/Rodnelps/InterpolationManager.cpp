@@ -2,6 +2,7 @@
 
 
 #include "InterpolationManager.h"
+#include "RodnelpsGameState.h"
 
 
 // Sets default values
@@ -16,7 +17,8 @@ AInterpolationManager::AInterpolationManager()
 void AInterpolationManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>();
+	gameState->setInterpolationManager(this);
 }
 
 void AInterpolationManager::setDesiredRotation(AActor* interpolatedActor,const FRotator& newRot, float delay)
