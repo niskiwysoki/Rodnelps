@@ -94,6 +94,7 @@ void AGameElementsGenerator::generateTokens()
 		FVector NewLocation = GetActorLocation() + FVector(0, 270.f + distanceBetweenStacks * stacksNum, heightBetweenTokens * j - 30.f);
 		AToken* token = GetWorld()->SpawnActor<AToken>(m_TokenToSpawn, NewLocation, FRotator::ZeroRotator);
 		token->setColor((ETokenColor)stacksNum);  // StacksNum = i = 5
+		token->setOwner(this);
 		tokenStack.Push(token);
 	}
 	m_TokenStacsArray.Push(tokenStack);
@@ -154,6 +155,11 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 		m_DecksArray.Push(cardsArray);
 		deckIndex++;
 	}
+}
+
+bool AGameElementsGenerator::isTaken_Implementation()
+{
+	return false;
 }
 
 // Called every frame

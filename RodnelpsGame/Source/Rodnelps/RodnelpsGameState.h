@@ -27,6 +27,7 @@ public:
 	void setInterpolationManager(AInterpolationManager* interpolationManager);
 	AInterpolationManager* GetInterpolationManager();
 
+	AGameElementsGenerator* getGameElementGenerator();
 	void setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator);
 
 private:

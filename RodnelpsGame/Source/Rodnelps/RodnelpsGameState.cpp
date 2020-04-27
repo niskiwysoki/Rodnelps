@@ -55,6 +55,11 @@ AInterpolationManager* ARodnelpsGameState::GetInterpolationManager()
 	return m_InterpolManager;
 }
 
+AGameElementsGenerator* ARodnelpsGameState::getGameElementGenerator()
+{
+	return m_GameElementsGenerator;
+}
+
 void ARodnelpsGameState::setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator)
 {
 	m_GameElementsGenerator = gameElementsGenerator;

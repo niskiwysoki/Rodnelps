@@ -24,23 +24,24 @@ class RODNELPS_API IOwnershipInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void addToken();
+		 void addToken();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void removeToken();
+		 void removeToken();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void addTrader();
+		 void addTrader();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void removeTrader();
+		 void removeTrader();
 		
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void addCard();
+		 void addCard();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-	void removeCard();
+		 void removeCard();
 
-
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
+		 bool isTaken();
 
 };

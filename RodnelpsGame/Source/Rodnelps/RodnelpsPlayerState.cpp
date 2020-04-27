@@ -2,6 +2,9 @@
 
 
 #include "RodnelpsPlayerState.h"
+#include "RodnelpsGameState.h"
+#include "InterpolationManager.h"
+#include "Engine/TargetPoint.h"
 
 ARodnelpsPlayerState::ARodnelpsPlayerState()
 {
@@ -28,7 +31,15 @@ APlayerBoardSpace* ARodnelpsPlayerState::getPlayerBoard()
 
 void ARodnelpsPlayerState::addToken(AToken* token)
 {
-	m_TokenStacksArray[int32(token->getColor())].Push(token);
+	int32 tokenColorIdnex = int32(token->getColor());
+	token->setOwner(this);
+	m_TokenStacksArray[tokenColorIdnex].Push(token);
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 400.f), 0);
+	ATargetPoint* point = getPlayerBoard()->getTokenTargetPoints()[tokenColorIdnex];
+	int32 numOfTokenInStack = m_TokenStacksArray[tokenColorIdnex].Num();
+	gamestate->GetInterpolationManager()->setDesiredLocation(token, point->GetActorLocation() + FVector(0.f, 0.f, numOfTokenInStack * 20.f), 0.f);
+
 
 }
 
@@ -40,4 +51,10 @@ int32 ARodnelpsPlayerState::getTokenNum()
 	}
 	return tokenSum;
 }
+
+bool ARodnelpsPlayerState::isTaken_Implementation()
+{
+	return true;
+}
+
 

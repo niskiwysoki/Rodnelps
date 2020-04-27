@@ -14,7 +14,6 @@ AToken::AToken()
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_Color = ETokenColor::GOLD;
-	m_IsTaken = 0;
 	
 }
 
@@ -28,31 +27,39 @@ void AToken::BeginPlay()
 
 void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 {
-	if (!isTaken())
+	if (m_Owner->Implements<UOwnershipInterface>())
 	{
-		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-		ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
-		if (activePlayer->GetPawn()->IsLocallyControlled())
+		if (!IOwnershipInterface::Execute_isTaken(m_Owner))
 		{
-			if (activePlayer->getTokenNum() < 10)
+			ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+			ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
+			if (activePlayer->GetPawn()->IsLocallyControlled())
 			{
-				activePlayer->addToken(this);
-
-				/*gamestate->GetInterpolationManager()->setDesiredLocation(this, GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
-				this->m_CardSettings->CardColor;
-				TArray<ATargetPoint*> cardsTargetPoints = activePlayer->getPlayerBoard()->getCardTargetPoints();
-				ATargetPoint* desiredPoint = cardsTargetPoints[(int32)this->m_CardSettings->CardColor];
-				gamestate->GetInterpolationManager()->setDesiredLocation(this, desiredPoint->GetActorLocation(), 0.f);*/
+				if (activePlayer->getTokenNum() < 10)
+				{
+					if (getColor() != ETokenColor::GOLD)
+					{
+						activePlayer->addToken(this);
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Reserve card with RMB to get gold token"));
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("You have too many tokens"));
+				}
 			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("You have too many tokens"));
-			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
+		UE_LOG(LogTemp, Warning, TEXT("Owner does not implement IOwnershipInterface"))
 	}
 	
 
@@ -70,7 +77,7 @@ ETokenColor AToken::getColor()
 	return m_Color;
 }
 
-void AToken::setOwner(IOwnershipInterface* newOwner)
+void AToken::setOwner(UObject* newOwner)
 {
 	m_Owner = newOwner;
 }
@@ -82,8 +89,5 @@ void AToken::Tick(float DeltaTime)
 
 }
 
-bool AToken::isTaken()
-{
-	return m_IsTaken;
-}
+
 

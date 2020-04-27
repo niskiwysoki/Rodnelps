@@ -6,11 +6,12 @@
 #include "GameFramework/PlayerState.h"
 #include "PlayerBoardSpace.h"
 #include "Token.h"
+#include "OwnershipInterface.h"
 #include "RodnelpsPlayerState.generated.h"
 
 
 UCLASS()
-class RODNELPS_API ARodnelpsPlayerState : public APlayerState//, public IOwnershipInterface
+class RODNELPS_API ARodnelpsPlayerState : public APlayerState, public IOwnershipInterface
 {
 	GENERATED_BODY()
 
@@ -18,12 +19,14 @@ public:
 	ARodnelpsPlayerState();
 
 	void setPlayerBoard(APlayerBoardSpace* playerBoard);
-	
 	APlayerBoardSpace* getPlayerBoard();
-
+	
 	void addToken(AToken* token);
-
 	int32 getTokenNum();
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
+		bool isTaken();
+	virtual bool isTaken_Implementation() override;
 
 private:
 	TArray<TArray<AToken*>> m_TokenStacksArray;

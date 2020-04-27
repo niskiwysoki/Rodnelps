@@ -35,6 +35,10 @@ protected:
 
 	void generateDecks(float cardHeightDiffrence, float distanceBetweenDecks);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interface")
+		bool isTaken();	//interface
+	virtual bool isTaken_Implementation() override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -29,8 +29,6 @@ public:
 	// Sets default values for this actor's properties
 	AToken();
 
-	bool isTaken();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -46,10 +44,10 @@ public:
 
 	ETokenColor getColor();
 
-	void setOwner(IOwnershipInterface* newOwner);
+	void setOwner(UObject* newOwner);
 
 private:
 	ETokenColor m_Color;
-	bool m_IsTaken;
-	IOwnershipInterface* m_Owner;
+	
+	UObject* m_Owner;
 };
