@@ -29,7 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
-	float m_InterpolationSpeed = 15;
+	float m_InterpolationSpeed = 20;
 
 private:
 	struct SInterpolData {

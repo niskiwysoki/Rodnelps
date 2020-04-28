@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PlayerBoardSpace.h"
 
+
 ARodnelpsGameState::ARodnelpsGameState()
 {
 	m_ActivePlayer = nullptr;
@@ -63,4 +64,9 @@ AGameElementsGenerator* ARodnelpsGameState::getGameElementGenerator()
 void ARodnelpsGameState::setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator)
 {
 	m_GameElementsGenerator = gameElementsGenerator;
+}
+
+void ARodnelpsGameState::endTurn()
+{
+	UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
 }

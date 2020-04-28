@@ -9,6 +9,8 @@
 #include "OwnershipInterface.h"
 #include "RodnelpsPlayerState.generated.h"
 
+class ARodnelpsGameState;
+
 
 UCLASS()
 class RODNELPS_API ARodnelpsPlayerState : public APlayerState, public IOwnershipInterface
@@ -22,7 +24,13 @@ public:
 	APlayerBoardSpace* getPlayerBoard();
 	
 	void addToken(AToken* token);
+	void removeToken(AToken* token);
+
+	void resetStatusAndEndTurn(ARodnelpsGameState* gamestate);
+
 	int32 getTokenNum();
+
+	bool areTokensDrawn();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
 		bool isTaken();
@@ -33,6 +41,7 @@ private:
 
 	ETokenColor m_FirstTokenTakenColor;
 	ETokenColor m_SecondTokenTakenColor;
+	bool m_AreTokensDrawn;
 	TArray<bool> m_ReservedCards;
 
 	APlayerBoardSpace* m_PlayerBoard;

@@ -24,24 +24,6 @@ class RODNELPS_API IOwnershipInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void addToken();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void removeToken();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void addTrader();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void removeTrader();
-		
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void addCard();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 void removeCard();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
-		 bool isTaken();
+		bool isTaken();
 
 };

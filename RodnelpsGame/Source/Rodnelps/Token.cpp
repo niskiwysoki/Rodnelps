@@ -27,15 +27,18 @@ void AToken::BeginPlay()
 
 void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Token location: %s"), *this->GetActorLocation().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Token color: %d"), m_Color);
+
 	if (m_Owner->Implements<UOwnershipInterface>())
 	{
-		if (!IOwnershipInterface::Execute_isTaken(m_Owner))
+		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+		ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
+		if (activePlayer->GetPawn()->IsLocallyControlled())
 		{
-			ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-			ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
-			if (activePlayer->GetPawn()->IsLocallyControlled())
+			if (!IOwnershipInterface::Execute_isTaken(m_Owner))
 			{
-				if (activePlayer->getTokenNum() < 10)
+				if (!activePlayer->areTokensDrawn())
 				{
 					if (getColor() != ETokenColor::GOLD)
 					{
@@ -48,23 +51,30 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("You have too many tokens"));
+					UE_LOG(LogTemp, Warning, TEXT("You have too many tokens. Discard excess tokens"));
+				}
+			}
+			else
+			{
+				if (activePlayer->getTokenNum() > 10 && activePlayer->areTokensDrawn())
+				{
+					activePlayer->removeToken(this);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
 				}
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
+			UE_LOG(LogTemp, Warning, TEXT("Pawn is not locally controlled"));
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Owner does not implement IOwnershipInterface"))
 	}
-	
-
-	UE_LOG(LogTemp, Warning, TEXT("Token location: %s"), *this->GetActorLocation().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Token color: %d"), m_Color);
 }
 
 void AToken::setColor(ETokenColor tokenColor)

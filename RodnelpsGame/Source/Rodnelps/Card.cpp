@@ -5,6 +5,7 @@
 #include "RodnelpsPlayerState.h"
 #include "InterpolationManager.h"
 #include "Engine/TargetPoint.h"
+#include "InputCoreTypes.h"
 
 // Sets default values
 ACard::ACard()
@@ -26,22 +27,29 @@ void ACard::BeginPlay()
 
 void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 {
-	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
-	if (activePlayer->GetPawn()->IsLocallyControlled())
+	if (EKeys::LeftMouseButton == ButtonPressed)
 	{
-		gamestate->GetInterpolationManager()->setDesiredLocation(this, GetActorLocation() + FVector(0.f, 0.f, 500.f),0.f);
-		this->m_CardSettings->CardColor;
-		TArray<ATargetPoint*> cardsTargetPoints = activePlayer->getPlayerBoard()->getCardTargetPoints();
-		ATargetPoint* desiredPoint = cardsTargetPoints[(int32)this->m_CardSettings->CardColor];
-		gamestate->GetInterpolationManager()->setDesiredLocation(this, desiredPoint->GetActorLocation(), 0.f);
-	}
+		UE_LOG(LogTemp, Warning, TEXT("Card location: %s"), *this->GetActorLocation().ToString())
+		UE_LOG(LogTemp, Warning, TEXT("Info: VP %d; CC %d; RW %d; RB %d; RG %d; RR %d; RB %d; CT %d"),
+			m_CardSettings->VictoryPoints, m_CardSettings->CardColor, m_CardSettings->ReqWhite, m_CardSettings->ReqBlue,
+			m_CardSettings->ReqGreen, m_CardSettings->ReqRed, m_CardSettings->ReqBlack, m_CardSettings->CardTier)
 
-	UE_LOG(LogTemp, Warning, TEXT("Card location: %s"), *this->GetActorLocation().ToString())
-	UE_LOG(LogTemp, Warning, TEXT("Info: VP %d; CC %d; RW %d; RB %d; RG %d; RR %d; RB %d; CT %d"), 
-		m_CardSettings->VictoryPoints, m_CardSettings->CardColor, m_CardSettings->ReqWhite, m_CardSettings->ReqBlue, 
-		m_CardSettings->ReqGreen, m_CardSettings->ReqRed, m_CardSettings->ReqBlack, m_CardSettings->CardTier)
+		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+		ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
+		if (activePlayer->GetPawn()->IsLocallyControlled())
+		{
+			gamestate->GetInterpolationManager()->setDesiredLocation(this, GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+			this->m_CardSettings->CardColor;
+			TArray<ATargetPoint*> cardsTargetPoints = activePlayer->getPlayerBoard()->getCardTargetPoints();
+			ATargetPoint* desiredPoint = cardsTargetPoints[(int32)this->m_CardSettings->CardColor];
+			gamestate->GetInterpolationManager()->setDesiredLocation(this, desiredPoint->GetActorLocation(), 0.f);
+		}
+	}
 	
+	if (EKeys::RightMouseButton == ButtonPressed)
+	{
+
+	}
 }
 
 void ACard::setCardInfo(FCardSettings* CardInfo)

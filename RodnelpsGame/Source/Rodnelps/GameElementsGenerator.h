@@ -30,10 +30,12 @@ protected:
 	void LayOutTheCards();
 
 	void generateTokens();
+	
 
 	void generateTraders(float distanceBetweenTraders);
 
 	void generateDecks(float cardHeightDiffrence, float distanceBetweenDecks);
+
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interface")
 		bool isTaken();	//interface
@@ -42,6 +44,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void addToken(AToken* token);
+	void removeToken(AToken* token);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))

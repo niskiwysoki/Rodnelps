@@ -100,6 +100,24 @@ void AGameElementsGenerator::generateTokens()
 	m_TokenStacsArray.Push(tokenStack);
 }
 
+void AGameElementsGenerator::addToken(AToken* token)
+{
+	ETokenColor color = token->getColor();
+
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+	gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].Num() - 30.f), 0.f);
+
+	m_TokenStacsArray[int32(color)].Push(token);
+	token->setOwner(this);
+}
+
+void AGameElementsGenerator::removeToken(AToken* token)
+{
+	ETokenColor color = token->getColor();
+	m_TokenStacsArray[int32(color)].Pop();
+}
+
 void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
 {
 	int32 TraderTableSize = m_TraderCards->GetRowMap().Num();

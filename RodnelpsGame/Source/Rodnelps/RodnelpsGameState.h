@@ -30,6 +30,8 @@ public:
 	AGameElementsGenerator* getGameElementGenerator();
 	void setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator);
 
+	void endTurn();
+
 private:
 	ARodnelpsPlayerState* m_ActivePlayer;
 	TArray<ARodnelpsPlayerState*> m_PlayersArray;
