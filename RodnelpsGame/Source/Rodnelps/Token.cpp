@@ -42,7 +42,7 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 				{
 					if (getColor() != ETokenColor::GOLD)
 					{
-						activePlayer->addToken(this);
+						activePlayer->addStandardToken(this);
 					}
 					else
 					{
@@ -59,6 +59,10 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 				if (activePlayer->getTokenNum() > 10 && activePlayer->areTokensDrawn())
 				{
 					activePlayer->removeToken(this);
+					if (activePlayer->getTokenNum() <= 10)
+					{
+						activePlayer->resetTokenStatusAndEndTurn(gamestate);
+					}
 				}
 				else
 				{

@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "PlayerBoardSpace.h"
-#include "Token.h"
 #include "OwnershipInterface.h"
+#include "Token.h"
 #include "RodnelpsPlayerState.generated.h"
 
 class ARodnelpsGameState;
-
+class ACard;
 
 UCLASS()
 class RODNELPS_API ARodnelpsPlayerState : public APlayerState, public IOwnershipInterface
@@ -23,26 +23,31 @@ public:
 	void setPlayerBoard(APlayerBoardSpace* playerBoard);
 	APlayerBoardSpace* getPlayerBoard();
 	
+	void addStandardToken(AToken* token);
 	void addToken(AToken* token);
 	void removeToken(AToken* token);
-
-	void resetStatusAndEndTurn(ARodnelpsGameState* gamestate);
-
+	void resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate);
 	int32 getTokenNum();
-
 	bool areTokensDrawn();
-	
+
+	bool areCardRequirementsFulfilled(ACard* card);
+	void addCard(ACard* card);
+	void payForCard(ACard* card);
+	void reserveCard(ACard* card);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
 		bool isTaken();
 	virtual bool isTaken_Implementation() override;
 
 private:
 	TArray<TArray<AToken*>> m_TokenStacksArray;
-
 	ETokenColor m_FirstTokenTakenColor;
 	ETokenColor m_SecondTokenTakenColor;
 	bool m_AreTokensDrawn;
-	TArray<bool> m_ReservedCards;
+
+	TArray <TArray<ACard*>> m_CardStacksArray;
+	TArray <ACard*> m_ReservedCardArray;
+	void payTokenStackForCard(int32 tokensNum, int32 colorIndex);
 
 	APlayerBoardSpace* m_PlayerBoard;
 };

@@ -61,6 +61,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void logOutCardInfo();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -69,8 +71,15 @@ public:
 	void onSelected(AActor* Target, FKey ButtonPressed);
 
 	void setCardInfo(FCardSettings* CardInfo);
+	FCardSettings* getCardInfo();
+	void setAsTaken();
+	bool isTaken();
+	bool isReserved();
+	void setAsReserved();
+	void setAsNotReserved();
 
 private:
 	FCardSettings* m_CardSettings;
-
+	bool m_isTaken;
+	bool m_isReserved;
 };

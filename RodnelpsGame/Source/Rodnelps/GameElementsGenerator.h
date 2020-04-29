@@ -47,6 +47,10 @@ public:
 
 	void addToken(AToken* token);
 	void removeToken(AToken* token);
+	int32 getStackSize(AToken* token);
+	TArray<AToken*> getGoldTokenStack();
+
+	void placeNewCard(ACard* card);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))

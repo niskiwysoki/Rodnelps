@@ -118,6 +118,30 @@ void AGameElementsGenerator::removeToken(AToken* token)
 	m_TokenStacsArray[int32(color)].Pop();
 }
 
+int32 AGameElementsGenerator::getStackSize(AToken* token)
+{
+	return m_TokenStacsArray[int32(token->getColor())].Num();
+}
+
+TArray<AToken*> AGameElementsGenerator::getGoldTokenStack()
+{
+	return m_TokenStacsArray[int32(ETokenColor::GOLD)];
+}
+
+void AGameElementsGenerator::placeNewCard(ACard* card)
+{
+	int32 deckIndex = card->getCardInfo()->CardTier - 1;
+	ACard* topDeckCard = m_DecksArray[deckIndex].Last();
+	FVector targetLocation = card->GetActorLocation() + FVector(0.f,0.f,300.f);
+	FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+	gamestate->GetInterpolationManager()->setDesiredRotation(topDeckCard, targetRotation, 0.f);
+	targetLocation = card->GetActorLocation();
+	gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+	m_DecksArray[deckIndex].Pop();
+}
+
 void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
 {
 	int32 TraderTableSize = m_TraderCards->GetRowMap().Num();
@@ -161,13 +185,12 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 		int32 cardIndex = 0;
 		while (cardsStructsArray.Num() > 0)
 		{
-			
 			FCardSettings* cardSettings = cardsStructsArray[FMath::RandRange(0, cardsStructsArray.Num() - 1)];
 			FVector NewLocation = GetActorLocation() + FVector(620.f + distanceBetweenDecks * deckIndex, 100.f, cardHeightDiffrence * cardIndex - 30.f);
 			ACard* Card = GetWorld()->SpawnActor<ACard>(m_CardToSpawn, NewLocation, FRotator::ZeroRotator);
 			Card->setCardInfo(cardSettings);
 			cardsArray.Push(Card);
-			cardsStructsArray.Remove(cardSettings);
+			cardsStructsArray.Remove(cardSettings);		//TODO Remove() removes all instances of item in array !!
 			cardIndex++; 
 		}
 		m_DecksArray.Push(cardsArray);
