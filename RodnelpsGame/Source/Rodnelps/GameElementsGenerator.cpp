@@ -62,9 +62,11 @@ void AGameElementsGenerator::LayOutTheCards()
 
 			targetLocation = GetActorLocation() + FVector(620.f + 620.f * deckIndex, 610.f + 500 * cardIndex, GetActorLocation().Z - 100.f);
 			interpolMaganger->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+			topDeckCard->setAsNotInDeck();
 
 			m_DecksArray[deckIndex].Pop();
 		}
+		m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
 	}
 }
 
@@ -128,18 +130,34 @@ TArray<AToken*> AGameElementsGenerator::getGoldTokenStack()
 	return m_TokenStacsArray[int32(ETokenColor::GOLD)];
 }
 
+TArray<ATraderCard*> AGameElementsGenerator::getTraderArray()
+{
+	return m_TradersArray;
+}
+
+void AGameElementsGenerator::removeTrader(ATraderCard* trader)
+{
+	m_TradersArray.Remove(trader);
+}
+
 void AGameElementsGenerator::placeNewCard(ACard* card)
 {
 	int32 deckIndex = card->getCardInfo()->CardTier - 1;
 	ACard* topDeckCard = m_DecksArray[deckIndex].Last();
-	FVector targetLocation = card->GetActorLocation() + FVector(0.f,0.f,300.f);
-	FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
-	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
-	gamestate->GetInterpolationManager()->setDesiredRotation(topDeckCard, targetRotation, 0.f);
-	targetLocation = card->GetActorLocation();
-	gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+	if (!card->isOnTopOfDeck())
+	{
+		FVector targetLocation = card->GetActorLocation() + FVector(0.f, 0.f, 300.f);
+		FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
+		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+		gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+		gamestate->GetInterpolationManager()->setDesiredRotation(topDeckCard, targetRotation, 0.f);
+		targetLocation = card->GetActorLocation();
+		gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+	}
+	topDeckCard->setAsNotInDeck();
+	topDeckCard->setIsOnTopOfDeck(false);
 	m_DecksArray[deckIndex].Pop();
+	m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
 }
 
 void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
@@ -163,7 +181,7 @@ void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
 			FVector NewLocation = GetActorLocation() + FVector(2480.f, 100.f + distanceBetweenTraders * traderIndex, -10.f);
 			ATraderCard* Trader = GetWorld()->SpawnActor<ATraderCard>(m_TraderToSpawn, NewLocation, FRotator::ZeroRotator);
 			Trader->SetTraderInfo((FTraderSettings*)(traderStruct.Value));
-			
+			m_TradersArray.Push(Trader);
 			traderIndex++;
 		}
 		setValue++;

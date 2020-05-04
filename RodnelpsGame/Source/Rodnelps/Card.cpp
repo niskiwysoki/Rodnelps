@@ -15,6 +15,8 @@ ACard::ACard()
 	m_CardSettings = nullptr;
 	m_isTaken = 0;
 	m_isReserved = 0;
+	m_IsInDeck = 1;
+	m_IsOnTopOfDeck = 0;
 
 }
 
@@ -41,38 +43,70 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 	ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
 	logOutCardInfo();
 
-	if (EKeys::LeftMouseButton == ButtonPressed)
+	if (activePlayer->GetPawn()->IsLocallyControlled())
 	{
-		if (activePlayer->GetPawn()->IsLocallyControlled())
+		if (!activePlayer->isTakingTokens())
 		{
-			if (!isTaken() || isReserved())			//every card reserved is taken
+			if (!activePlayer->isTakingTraders())
 			{
-				if (activePlayer->areCardRequirementsFulfilled(this))
+				if (EKeys::LeftMouseButton == ButtonPressed)
 				{
-					activePlayer->addCard(this);
+					if (!this->isInDeck())
+					{
+						if (!isTaken() || isReserved())			// if every card reserved is taken
+						{
+							if (activePlayer->areCardRequirementsFulfilled(this))
+							{
+								activePlayer->addCard(this);
+							}
+							else
+							{
+								UE_LOG(LogTemp, Warning, TEXT("You don't meet card requirements"))
+							}
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("This card is taken"))
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("You can't buy card from deck"))
+					}
 				}
-				else
+
+				if (EKeys::RightMouseButton == ButtonPressed)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("You don't meet card requirements"))
+					if (!isTaken())
+					{
+						if (!isInDeck() || isOnTopOfDeck())
+						{
+							activePlayer->reserveCard(this);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("You can reserve card only from top of deck"))
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("You cannot reserve taken card from player's board"))
+					}
 				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("This card is taken"))
+				UE_LOG(LogTemp, Warning, TEXT("Before end of turn take one of avaliable trader"))
 			}
-		}
-	}
-	
-	if (EKeys::RightMouseButton == ButtonPressed)
-	{
-		if (!isTaken())
-		{
-			activePlayer->reserveCard(this);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("You cannot reserved taken card from board"))
+			UE_LOG(LogTemp, Warning, TEXT("You are drawing or discarding tokens now"))
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Pawn is not locally controlled"));
 	}
 }
 
@@ -101,21 +135,35 @@ bool ACard::isReserved()
 	return m_isReserved;
 }
 
-void ACard::setAsReserved()
+void ACard::setIsReservedStatus(bool status)
 {
-	m_isReserved = true;
+	m_isReserved = status;
 }
 
-void ACard::setAsNotReserved()
+bool ACard::isInDeck()
 {
-	m_isReserved = false;
+	return m_IsInDeck;
+}
+
+bool ACard::isOnTopOfDeck()
+{
+	return m_IsOnTopOfDeck;
+}
+
+void ACard::setIsOnTopOfDeck(bool status)
+{
+	m_IsOnTopOfDeck = status;
+}
+
+void ACard::setAsNotInDeck()
+{
+	m_IsInDeck = false;
 }
 
 // Called every frame
 void ACard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 
 }
 

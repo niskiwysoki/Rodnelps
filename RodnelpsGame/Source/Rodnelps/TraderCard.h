@@ -51,6 +51,14 @@ public:
 
 	void SetTraderInfo(FTraderSettings* TraderInfo);
 
+	FTraderSettings* getTraderInfo();
+
+	bool isTaken();
+	void setIsTaken(bool status);
+
 private:
 	FTraderSettings* m_TraderSettings;
+	bool m_isTaken;
+
+
 };

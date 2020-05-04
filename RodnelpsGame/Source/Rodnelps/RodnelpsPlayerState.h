@@ -11,6 +11,7 @@
 
 class ARodnelpsGameState;
 class ACard;
+class ATraderCard;
 
 UCLASS()
 class RODNELPS_API ARodnelpsPlayerState : public APlayerState, public IOwnershipInterface
@@ -29,11 +30,21 @@ public:
 	void resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate);
 	int32 getTokenNum();
 	bool areTokensDrawn();
+	bool isTakingTokens();
+	bool isTakingTraders();
+	void setIsTakingTraders(bool status);
 
 	bool areCardRequirementsFulfilled(ACard* card);
 	void addCard(ACard* card);
+	bool isTraderPosibbleToGet();
+
+	void transferTrader(ATraderCard* trader);
+	bool isMeetsTraderRequirements(ATraderCard* trader);
+
 	void payForCard(ACard* card);
 	void reserveCard(ACard* card);
+
+	void moveActorOnBoard(AActor* actor, FVector desiredLocation);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
 		bool isTaken();
@@ -44,9 +55,12 @@ private:
 	ETokenColor m_FirstTokenTakenColor;
 	ETokenColor m_SecondTokenTakenColor;
 	bool m_AreTokensDrawn;
+	bool m_isTakingTokens;
+	bool m_isTakingTrader;
 
 	TArray <TArray<ACard*>> m_CardStacksArray;
 	TArray <ACard*> m_ReservedCardArray;
+	TArray <ATraderCard*> m_TraderCardArray;
 	void payTokenStackForCard(int32 tokensNum, int32 colorIndex);
 
 	APlayerBoardSpace* m_PlayerBoard;

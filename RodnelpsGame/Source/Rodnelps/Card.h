@@ -72,14 +72,20 @@ public:
 
 	void setCardInfo(FCardSettings* CardInfo);
 	FCardSettings* getCardInfo();
-	void setAsTaken();
+	
 	bool isTaken();
+	void setAsTaken();
+	bool isInDeck();
+	void setAsNotInDeck();
 	bool isReserved();
-	void setAsReserved();
-	void setAsNotReserved();
+	void setIsReservedStatus(bool status);
+	bool isOnTopOfDeck();
+	void setIsOnTopOfDeck(bool status);
 
 private:
 	FCardSettings* m_CardSettings;
 	bool m_isTaken;
 	bool m_isReserved;
+	bool m_IsInDeck;
+	bool m_IsOnTopOfDeck;
 };

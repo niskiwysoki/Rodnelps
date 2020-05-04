@@ -17,7 +17,6 @@ AToken::AToken()
 	
 }
 
-
 // Called when the game starts or when spawned
 void AToken::BeginPlay()
 {
@@ -36,38 +35,45 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 		ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
 		if (activePlayer->GetPawn()->IsLocallyControlled())
 		{
-			if (!IOwnershipInterface::Execute_isTaken(m_Owner))
+			if (!activePlayer->isTakingTraders())
 			{
-				if (!activePlayer->areTokensDrawn())
+				if (!IOwnershipInterface::Execute_isTaken(m_Owner))
 				{
-					if (getColor() != ETokenColor::GOLD)
+					if (!activePlayer->areTokensDrawn())
 					{
-						activePlayer->addStandardToken(this);
+						if (getColor() != ETokenColor::GOLD)
+						{
+							activePlayer->addStandardToken(this);
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Reserve card with RMB to get gold token"));
+						}
 					}
 					else
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Reserve card with RMB to get gold token"));
+						UE_LOG(LogTemp, Warning, TEXT("You have too many tokens. Discard excess tokens"));
 					}
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("You have too many tokens. Discard excess tokens"));
+					if (activePlayer->getTokenNum() > 10 && activePlayer->areTokensDrawn())
+					{
+						activePlayer->removeToken(this);
+						if (activePlayer->getTokenNum() <= 10)
+						{
+							activePlayer->resetTokenStatusAndEndTurn(gamestate);
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
+					}
 				}
 			}
 			else
 			{
-				if (activePlayer->getTokenNum() > 10 && activePlayer->areTokensDrawn())
-				{
-					activePlayer->removeToken(this);
-					if (activePlayer->getTokenNum() <= 10)
-					{
-						activePlayer->resetTokenStatusAndEndTurn(gamestate);
-					}
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
-				}
+				UE_LOG(LogTemp, Warning, TEXT("Before end of turn take one of avaliable trader"))
 			}
 		}
 		else

@@ -66,16 +66,16 @@ void AInterpolationManager::Tick(float DeltaTime)
 				FVector Loc = FMath::VInterpTo(ReqInterpolation->interpolatedActor->GetActorLocation(),
 					ReqInterpolation->m_DesiredLocation, DeltaTime, m_InterpolationSpeed);
 
-				if (Loc != ReqInterpolation->interpolatedActor->GetActorLocation())
+				if (!(Loc - ReqInterpolation->interpolatedActor->GetActorLocation()).IsNearlyZero(0.01f))
 				{
 					ReqInterpolation->interpolatedActor->SetActorLocation(Loc);
 				}
 				else
 				{
+					ReqInterpolation->interpolatedActor->SetActorLocation(Loc);
 					m_InterpolationQueue.Pop();
 					return;
 				}
-
 			}
 
 			if (ReqInterpolation->m_DesiredRotation != FRotator(45.f, 45.f, 45.f))

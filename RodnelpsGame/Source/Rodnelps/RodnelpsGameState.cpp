@@ -5,6 +5,7 @@
 #include "RodnelpsPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerBoardSpace.h"
+#include "GameElementsGenerator.h"
 
 
 ARodnelpsGameState::ARodnelpsGameState()
@@ -68,5 +69,39 @@ void ARodnelpsGameState::setGameElementGenerator(AGameElementsGenerator* gameEle
 
 void ARodnelpsGameState::endTurn()
 {
-	UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
+	if (m_ActivePlayer->isTakingTraders())
+	{
+		m_ActivePlayer->setIsTakingTraders(false);
+		//TODO change active player
+		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
+		return;
+	}
+
+	if (m_ActivePlayer->isTraderPosibbleToGet())
+	{
+		TArray<ATraderCard*> accessibleTradersArray;
+		for (const auto& trader : m_GameElementsGenerator->getTraderArray())
+		{
+			if(m_ActivePlayer->isMeetsTraderRequirements(trader))
+			{
+				accessibleTradersArray.Push(trader);
+			}
+		}
+
+		if (accessibleTradersArray.Num() == 1)
+		{
+			m_ActivePlayer->transferTrader(accessibleTradersArray[0]);
+	
+		}
+		else
+		{
+			m_ActivePlayer->setIsTakingTraders(true);
+			UE_LOG(LogTemp, Warning, TEXT("Take one of traders"))
+		}
+	}
+	else
+	{
+		//TODO change active player
+		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
+	}
 }

@@ -28,14 +28,9 @@ protected:
 	virtual void BeginPlay() override;
 
 	void LayOutTheCards();
-
 	void generateTokens();
-	
-
 	void generateTraders(float distanceBetweenTraders);
-
 	void generateDecks(float cardHeightDiffrence, float distanceBetweenDecks);
-
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interface")
 		bool isTaken();	//interface
@@ -49,6 +44,9 @@ public:
 	void removeToken(AToken* token);
 	int32 getStackSize(AToken* token);
 	TArray<AToken*> getGoldTokenStack();
+
+	TArray<ATraderCard*> getTraderArray();
+	void removeTrader(ATraderCard* trader);
 
 	void placeNewCard(ACard* card);
 
@@ -74,4 +72,6 @@ private:
 	TArray<TArray<ACard*>> m_DecksArray;
 
 	TArray<TArray<AToken*>> m_TokenStacsArray;
+
+	TArray<ATraderCard*> m_TradersArray;
 };
