@@ -6,6 +6,9 @@
 #include "InterpolationManager.h"
 #include "Engine/TargetPoint.h"
 #include "InputCoreTypes.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "UI/CardUserWidget.h"
 
 // Sets default values
 ACard::ACard()
@@ -17,6 +20,12 @@ ACard::ACard()
 	m_isReserved = 0;
 	m_IsInDeck = 1;
 	m_IsOnTopOfDeck = 0;
+
+	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = m_Mesh;
+
+	m_WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	m_WidgetComp->SetupAttachment(m_Mesh);
 
 }
 
@@ -113,6 +122,16 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 void ACard::setCardInfo(FCardSettings* CardInfo)
 {
 	m_CardSettings = CardInfo;
+
+	if (m_WidgetComp)
+	{
+		UCardUserWidget* Widget = Cast<UCardUserWidget>(m_WidgetComp->GetUserWidgetObject());
+
+		if (Widget)
+			Widget->SetCard(this);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("Widget class does not inherit from UCardUserWidget!"));
+	}
 }
 
 FCardSettings* ACard::getCardInfo()

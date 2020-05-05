@@ -7,6 +7,9 @@
 #include "Engine/DataTable.h"
 #include "Card.generated.h"
 
+class UWidgetComponent;
+class UStaticMeshComponent;
+
 UENUM(BlueprintType)
 enum class ECardColor : uint8
 {
@@ -53,6 +56,12 @@ class RODNELPS_API ACard : public AActor
 {
 	GENERATED_BODY()
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* m_WidgetComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* m_Mesh;
+
 public:	
 	// Sets default values for this actor's properties
 	ACard();
@@ -71,6 +80,10 @@ public:
 	void onSelected(AActor* Target, FKey ButtonPressed);
 
 	void setCardInfo(FCardSettings* CardInfo);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FCardSettings& GetCardInfoBP() const { return *m_CardSettings;}
+
 	FCardSettings* getCardInfo();
 	
 	bool isTaken();

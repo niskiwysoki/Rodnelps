@@ -143,21 +143,25 @@ void AGameElementsGenerator::removeTrader(ATraderCard* trader)
 void AGameElementsGenerator::placeNewCard(ACard* card)
 {
 	int32 deckIndex = card->getCardInfo()->CardTier - 1;
-	ACard* topDeckCard = m_DecksArray[deckIndex].Last();
-	if (!card->isOnTopOfDeck())
+	if (m_DecksArray[deckIndex].Num() != 0)
 	{
-		FVector targetLocation = card->GetActorLocation() + FVector(0.f, 0.f, 300.f);
-		FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
-		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-		gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
-		gamestate->GetInterpolationManager()->setDesiredRotation(topDeckCard, targetRotation, 0.f);
-		targetLocation = card->GetActorLocation();
-		gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+		ACard* topDeckCard = m_DecksArray[deckIndex].Last();
+		if (!card->isOnTopOfDeck())
+		{
+			FVector targetLocation = card->GetActorLocation() + FVector(0.f, 0.f, 300.f);
+			FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
+			ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+			gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+			gamestate->GetInterpolationManager()->setDesiredRotation(topDeckCard, targetRotation, 0.f);
+			targetLocation = card->GetActorLocation();
+			gamestate->GetInterpolationManager()->setDesiredLocation(topDeckCard, targetLocation, 0.f);
+		}
+		topDeckCard->setAsNotInDeck();
+		topDeckCard->setIsOnTopOfDeck(false);
+		m_DecksArray[deckIndex].Pop();
+		if (m_DecksArray[deckIndex].Num() != 0)
+			m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
 	}
-	topDeckCard->setAsNotInDeck();
-	topDeckCard->setIsOnTopOfDeck(false);
-	m_DecksArray[deckIndex].Pop();
-	m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
 }
 
 void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
