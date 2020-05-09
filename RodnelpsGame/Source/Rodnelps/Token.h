@@ -7,8 +7,10 @@
 #include "Token.generated.h"
 
 class IOwnershipInterface;
+class UWidgetComponent;
 
-enum class ETokenColor : int32
+UENUM(BlueprintType)
+enum class ETokenColor : uint8
 {
 	WHITE,
 	BLUE,
@@ -25,6 +27,12 @@ class RODNELPS_API AToken : public AActor
 {
 	GENERATED_BODY()
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Token", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* m_Mesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Token", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* m_WidgetComp;
+
 public:	
 	// Sets default values for this actor's properties
 	AToken();
@@ -41,13 +49,24 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	void setColor(ETokenColor tokenColor);
-
 	ETokenColor getColor();
 
+	void setMaterial(UMaterial* material);
+
 	void setOwner(UObject* newOwner);
+
+	void setTokenIndex(int32 index);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const int32& GetTokenIndexBP() const { return m_TokenIndex; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const ETokenColor& getTokenColorBP() const { return m_Color; }
 
 private:
 	ETokenColor m_Color;
 	
 	UObject* m_Owner;
+	int32 m_TokenIndex;
+	
 };

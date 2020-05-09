@@ -74,7 +74,7 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 				if (m_FirstTokenTakenColor == m_SecondTokenTakenColor)
 				{
 					m_AreTokensDrawn = true;
-					if (getTokenNum() <= 10)
+					if (getTokenNum() < 10)
 					{
 						resetTokenStatusAndEndTurn(gamestate);
 					}
@@ -84,7 +84,7 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 		else
 		{
 			m_AreTokensDrawn = true;
-			if (getTokenNum() <= 10)
+			if (getTokenNum() < 10)
 			{
 				resetTokenStatusAndEndTurn(gamestate);
 			}
@@ -97,20 +97,24 @@ void ARodnelpsPlayerState::addToken(AToken* token)
 {
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	int32 tokenColorIdnex = int32(token->getColor());
-	token->setOwner(this);
-	m_TokenStacksArray[tokenColorIdnex].Push(token);
-	gamestate->getGameElementGenerator()->removeToken(token);
+	
+	TArray<AToken*> tokenStackInColor = gamestate->getGameElementGenerator()->getTokenStack(token); 
+	AToken* tokenToAdd = tokenStackInColor.Last();	
+	tokenToAdd->setOwner(this);
+	m_TokenStacksArray[tokenColorIdnex].Push(tokenToAdd);
+	gamestate->getGameElementGenerator()->removeToken(tokenToAdd);
 
 	ATargetPoint* point = getPlayerBoard()->getTokenTargetPoints()[tokenColorIdnex];
 	int32 numOfTokenInStack = m_TokenStacksArray[tokenColorIdnex].Num();
-	moveActorOnBoard(token, point->GetActorLocation() + FVector(0.f, 0.f, numOfTokenInStack * 20.f));
+	moveActorOnBoard(tokenToAdd, point->GetActorLocation() + FVector(0.f, 0.f, numOfTokenInStack * 20.f));
 }
 
 void ARodnelpsPlayerState::removeToken(AToken* token)
 {
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	gamestate->getGameElementGenerator()->addToken(token);
-	m_TokenStacksArray[int32(token->getColor())].Pop(token);
+	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].Last();
+	gamestate->getGameElementGenerator()->addToken(tokenToRemove);
+	m_TokenStacksArray[int32(tokenToRemove->getColor())].Pop(tokenToRemove);
 }
 
 void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate)
@@ -176,7 +180,7 @@ void ARodnelpsPlayerState::addCard(ACard* card)
 	int32 colorIndex = int32(card->getCardInfo()->CardColor);
 	int32 cardsInColor = m_CardStacksArray[colorIndex].Num();
 	ATargetPoint* desiredPoint = getPlayerBoard()->getCardTargetPoints()[colorIndex];
-	moveActorOnBoard(card, desiredPoint->GetActorLocation() + FVector(-150.f * cardsInColor, 0.f, 10.f * cardsInColor));
+	moveActorOnBoard(card, desiredPoint->GetActorLocation() + FVector(-150.f * cardsInColor, 0.f, 8.f * cardsInColor));
 	
 	payForCard(card);
 	m_CardStacksArray[colorIndex].Push(card);
@@ -308,12 +312,25 @@ void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocati
 {
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, actor->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+	if (Cast<ACard>(actor))
+	{
+		ACard* card = Cast<ACard>(actor);
+		if (card->isOnTopOfDeck())
+		{
+			gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, 0.f, 180.f), 0.f);
+		}
+	}
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, desiredLocation, 0.f);
 }
 
 bool ARodnelpsPlayerState::isTaken_Implementation()
 {
 	return true;
+}
+
+void ARodnelpsPlayerState::setTokenIndex_Implementation(AToken* token)
+{
+	token->setTokenIndex(m_TokenStacksArray[int32(token->getColor())].Num());
 }
 
 void ARodnelpsPlayerState::payTokenStackForCard(int32 tokensNum, int32 stackColorIndex)

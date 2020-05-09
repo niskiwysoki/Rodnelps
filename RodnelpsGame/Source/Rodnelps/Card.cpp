@@ -128,7 +128,7 @@ void ACard::setCardInfo(FCardSettings* CardInfo)
 		UCardUserWidget* Widget = Cast<UCardUserWidget>(m_WidgetComp->GetUserWidgetObject());
 
 		if (Widget)
-			Widget->SetCard(this);
+			Widget->setCard(this);
 		else
 			UE_LOG(LogTemp, Warning, TEXT("Widget class does not inherit from UCardUserWidget!"));
 	}

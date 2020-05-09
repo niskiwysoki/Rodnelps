@@ -16,12 +16,12 @@ class RODNELPS_API UCardUserWidget : public UUserWidget
 
 public:
 
-	UCardUserWidget(const FObjectInitializer& Init);
+	UCardUserWidget(const FObjectInitializer& init);
 
-	void SetCard(ACard* Card);
+	void setCard(ACard* card);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Data")
-	void OnCardSet(ACard* Card);
+	void OnCardSet(ACard* card);
 
 protected:
 

@@ -5,18 +5,18 @@
 #include "../Card.h"
 #include "Components/TextBlock.h"
 
-UCardUserWidget::UCardUserWidget(const FObjectInitializer& Init)
-	: UUserWidget(Init)
+UCardUserWidget::UCardUserWidget(const FObjectInitializer& init)
+	: UUserWidget(init)
 {
 	m_Card = nullptr;
 }
 
-void UCardUserWidget::SetCard(ACard* Card)
+void UCardUserWidget::setCard(ACard* card)
 {
-	if (!Card)
+	if (!card)
 		return;
 
-	m_Card = Card;
-	OnCardSet(Card);
+	m_Card = card;
+	OnCardSet(card);
 	m_VictoryPointsText->SetText(FText::AsNumber(m_Card->getCardInfo()->VictoryPoints));
 }

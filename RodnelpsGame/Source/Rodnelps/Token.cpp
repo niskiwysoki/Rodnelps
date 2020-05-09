@@ -6,6 +6,10 @@
 #include "RodnelpsGameState.h"
 #include "RodnelpsPlayerState.h"
 #include "InterpolationManager.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/Material.h"
+#include "Components/WidgetComponent.h"
+#include "UI/TokenUserWidget.h"
 
 // Sets default values
 AToken::AToken() 
@@ -14,13 +18,31 @@ AToken::AToken()
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_Color = ETokenColor::GOLD;
-	
+	m_TokenIndex = 0;
+
+	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = m_Mesh;
+	m_WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	m_WidgetComp->SetupAttachment(m_Mesh);
+
+	m_Owner = nullptr;
+
 }
 
 // Called when the game starts or when spawned
 void AToken::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (m_WidgetComp)
+	{
+		UTokenUserWidget* Widget = Cast<UTokenUserWidget>(m_WidgetComp->GetUserWidgetObject());
+		if (Widget)
+			Widget->setToken(this);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("Widget class does not inherit from UTokenUserWidget!"));
+	}
+
 	OnClicked.AddDynamic(this, &AToken::OnSelected);
 }
 
@@ -100,6 +122,25 @@ ETokenColor AToken::getColor()
 void AToken::setOwner(UObject* newOwner)
 {
 	m_Owner = newOwner;
+	if (m_Owner->Implements<UOwnershipInterface>())
+	{
+		IOwnershipInterface::Execute_setTokenIndex(m_Owner, this);
+	}
+	UTokenUserWidget* Widget = Cast<UTokenUserWidget>(m_WidgetComp->GetUserWidgetObject());
+	if (Widget)
+		Widget->OnTokenSet(this);
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Widget class does not inherit from UTokenUserWidget!"));
+}
+
+void AToken::setTokenIndex(int32 index)
+{
+	m_TokenIndex = index;
+}
+
+void AToken::setMaterial(UMaterial* material)
+{
+	m_Mesh->SetMaterial(0, material);
 }
 
 // Called every frame

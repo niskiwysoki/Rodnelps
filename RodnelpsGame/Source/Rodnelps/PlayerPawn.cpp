@@ -19,7 +19,7 @@ APlayerPawn::APlayerPawn()
 	
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
 	Camera->SetupAttachment(RootComponent);
-	Camera->SetRelativeRotation(FRotator(-90.0f, 0.0f, 0.0f));
+	Camera->SetRelativeRotation(FRotator(-75.0f, 0.0f, 0.0f));
 	CameraMovementSpeed = 800;
 }
 
@@ -70,5 +70,5 @@ void APlayerPawn::Move_YAxis(float AxisValue)
 void APlayerPawn::Move_ZAxis(float AxisValue)
 {
 	// Move at 100 units per second forward or backward
-	CurrentVelocity.Z = FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed;
+	CurrentVelocity.Z = FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed *3;
 }

@@ -50,6 +50,8 @@ public:
 		bool isTaken();
 	virtual bool isTaken_Implementation() override;
 
+	virtual void setTokenIndex_Implementation(AToken* token) override;
+
 private:
 	TArray<TArray<AToken*>> m_TokenStacksArray;
 	ETokenColor m_FirstTokenTakenColor;

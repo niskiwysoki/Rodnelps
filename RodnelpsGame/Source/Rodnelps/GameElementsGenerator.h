@@ -12,6 +12,7 @@ class ATraderCard;
 class ACard;
 class AToken;
 class AInterpolationManager;
+class UMaterial;
 
 
 UCLASS()
@@ -36,6 +37,8 @@ protected:
 		bool isTaken();	//interface
 	virtual bool isTaken_Implementation() override;
 
+	virtual void setTokenIndex_Implementation(AToken* token) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -44,6 +47,7 @@ public:
 	void removeToken(AToken* token);
 	int32 getStackSize(AToken* token);
 	TArray<AToken*> getGoldTokenStack();
+	TArray<AToken*> getTokenStack(AToken* token);
 
 	TArray<ATraderCard*> getTraderArray();
 	void removeTrader(ATraderCard* trader);
@@ -68,6 +72,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InterpolationManager", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AInterpolationManager> m_InterpolationManagerToSpawn;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Token", meta = (AllowPrivateAccess = "true"))
+	TArray<UMaterial*> m_TokenMaterialsArray;
 	
 	TArray<TArray<ACard*>> m_DecksArray;
 

@@ -7,6 +7,8 @@
 #include "Engine/DataTable.h"
 #include "TraderCard.generated.h"
 
+class UWidgetComponent;
+
 
 USTRUCT(BlueprintType)
 struct RODNELPS_API FTraderSettings : public FTableRowBase
@@ -34,6 +36,13 @@ class RODNELPS_API ATraderCard : public AActor
 {
 	GENERATED_BODY()
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* m_WidgetComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* m_Mesh;
+
+
 public:	
 	// Sets default values for this actor's properties
 	ATraderCard();
@@ -52,6 +61,9 @@ public:
 	void SetTraderInfo(FTraderSettings* TraderInfo);
 
 	FTraderSettings* getTraderInfo();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const FTraderSettings& GetTraderInfoBP() const { return *m_TraderSettings; }
 
 	bool isTaken();
 	void setIsTaken(bool status);

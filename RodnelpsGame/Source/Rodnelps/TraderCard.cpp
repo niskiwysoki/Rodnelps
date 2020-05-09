@@ -4,6 +4,9 @@
 #include "TraderCard.h"
 #include "RodnelpsGameState.h"
 #include "RodnelpsPlayerState.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "UI/TraderUserWidget.h"
 
 // Sets default values
 ATraderCard::ATraderCard()
@@ -12,6 +15,12 @@ ATraderCard::ATraderCard()
 	PrimaryActorTick.bCanEverTick = true;
 	m_TraderSettings = nullptr;
 	m_isTaken = 0;
+
+	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	RootComponent = m_Mesh;
+
+	m_WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	m_WidgetComp->SetupAttachment(m_Mesh);
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +76,15 @@ void ATraderCard::OnSelected(AActor* Target, FKey ButtonPressed)
 void ATraderCard::SetTraderInfo(FTraderSettings* TraderInfo)
 {
 	m_TraderSettings = TraderInfo;
+	if (m_WidgetComp)
+	{
+		UTraderUserWidget* Widget = Cast<UTraderUserWidget>(m_WidgetComp->GetUserWidgetObject());
+
+		if (Widget)
+			Widget->setTrader(this);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("Widget class does not inherit from UTokenUserWidget!"));
+	}
 }
 
 FTraderSettings* ATraderCard::getTraderInfo()

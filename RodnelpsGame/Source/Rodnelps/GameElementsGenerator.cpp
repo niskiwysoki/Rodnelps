@@ -84,7 +84,8 @@ void AGameElementsGenerator::generateTokens()
 			FVector NewLocation = GetActorLocation() + FVector(0, 270.f + distanceBetweenStacks * i, heightBetweenTokens * j - 30.f);
 			AToken* token = GetWorld()->SpawnActor<AToken>(m_TokenToSpawn, NewLocation, FRotator::ZeroRotator);
 			token->setColor((ETokenColor)i);
-			token->setOwner(this);
+			token->setMaterial(m_TokenMaterialsArray[i]);
+			//token->setOwner(this);
 			tokenStack.Push(token);
 		}
 		m_TokenStacsArray.Push(tokenStack);
@@ -95,11 +96,19 @@ void AGameElementsGenerator::generateTokens()
 	{
 		FVector NewLocation = GetActorLocation() + FVector(0, 270.f + distanceBetweenStacks * stacksNum, heightBetweenTokens * j - 30.f);
 		AToken* token = GetWorld()->SpawnActor<AToken>(m_TokenToSpawn, NewLocation, FRotator::ZeroRotator);
-		token->setColor((ETokenColor)stacksNum);  // StacksNum = i = 5
-		token->setOwner(this);
+		token->setColor((ETokenColor)stacksNum);  // stacksNum = i = 5
+		token->setMaterial(m_TokenMaterialsArray[stacksNum]);
+		//token->setOwner(this);
 		tokenStack.Push(token);
 	}
 	m_TokenStacsArray.Push(tokenStack);
+
+	//setOwners+setIndexes
+	for (auto& array : m_TokenStacsArray)
+		for (auto& token : array)
+		{
+			token->setOwner(this);
+		}
 }
 
 void AGameElementsGenerator::addToken(AToken* token)
@@ -128,6 +137,11 @@ int32 AGameElementsGenerator::getStackSize(AToken* token)
 TArray<AToken*> AGameElementsGenerator::getGoldTokenStack()
 {
 	return m_TokenStacsArray[int32(ETokenColor::GOLD)];
+}
+
+TArray<AToken*> AGameElementsGenerator::getTokenStack(AToken* token)
+{
+	return m_TokenStacsArray[int32(token->getColor())];
 }
 
 TArray<ATraderCard*> AGameElementsGenerator::getTraderArray()
@@ -223,6 +237,11 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 bool AGameElementsGenerator::isTaken_Implementation()
 {
 	return false;
+}
+
+void AGameElementsGenerator::setTokenIndex_Implementation(AToken* token)
+{
+	token->setTokenIndex(m_TokenStacsArray[int32(token->getColor())].Find(token));
 }
 
 // Called every frame

@@ -26,4 +26,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
 		bool isTaken();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interface")
+		void setTokenIndex(AToken* token);
+
 };
