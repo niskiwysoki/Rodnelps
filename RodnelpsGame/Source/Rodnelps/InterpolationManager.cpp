@@ -3,6 +3,7 @@
 
 #include "InterpolationManager.h"
 #include "RodnelpsGameState.h"
+#include "Token.h"
 
 
 // Sets default values
@@ -74,6 +75,8 @@ void AInterpolationManager::Tick(float DeltaTime)
 				{
 					ReqInterpolation->interpolatedActor->SetActorLocation(Loc);
 					m_InterpolationQueue.Pop();
+					if (Cast<AToken>(ReqInterpolation->interpolatedActor))
+						Cast<AToken>(ReqInterpolation->interpolatedActor)->SetTokenUI();
 					return;
 				}
 			}

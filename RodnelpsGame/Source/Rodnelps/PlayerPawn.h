@@ -11,6 +11,9 @@ class RODNELPS_API APlayerPawn : public APawn
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* VisibleComponent;
+
 public:
 	// Sets default values for this pawn's properties
 	APlayerPawn();
@@ -25,9 +28,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-	UStaticMeshComponent* VisibleComponent;
 
 	// Input functions
 	void Move_XAxis(float AxisValue);

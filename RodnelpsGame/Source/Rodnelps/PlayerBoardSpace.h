@@ -47,5 +47,4 @@ private:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "BoardLayout", meta = (AllowPrivateAccess = "true"))
 		int32 m_PlayerId = -1;
-
 };

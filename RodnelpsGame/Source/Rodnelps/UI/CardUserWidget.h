@@ -20,6 +20,8 @@ public:
 
 	void setCard(ACard* card);
 
+	void NotifyCardDataChanged();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "Data")
 	void OnCardSet(ACard* card);
 

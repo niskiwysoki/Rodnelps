@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "OwnershipInterface.h"
+#include "RodnelpsUtils.h"
 #include "GameElementsGenerator.generated.h"
 
 class UDataTable;
@@ -23,6 +24,12 @@ class RODNELPS_API AGameElementsGenerator : public AActor, public IOwnershipInte
 public:	
 	// Sets default values for this actor's properties
 	AGameElementsGenerator();
+
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
+
+	const TArray<ATraderCard*>& getTraderArray();
+
+	void generateGamePieces();
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,8 +55,6 @@ public:
 	int32 getStackSize(AToken* token);
 	TArray<AToken*> getGoldTokenStack();
 	TArray<AToken*> getTokenStack(AToken* token);
-
-	TArray<ATraderCard*> getTraderArray();
 	void removeTrader(ATraderCard* trader);
 
 	void placeNewCard(ACard* card);
@@ -73,12 +78,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "InterpolationManager", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AInterpolationManager> m_InterpolationManagerToSpawn;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Token", meta = (AllowPrivateAccess = "true"))
-	TArray<UMaterial*> m_TokenMaterialsArray;
-	
-	TArray<TArray<ACard*>> m_DecksArray;
+	UPROPERTY(Replicated)
+	TArray<FCardArray> m_DecksArray;
 
-	TArray<TArray<AToken*>> m_TokenStacsArray;
+	UPROPERTY(Replicated)
+	TArray<FTokenArray> m_TokenStacsArray;
 
 	TArray<ATraderCard*> m_TradersArray;
 };

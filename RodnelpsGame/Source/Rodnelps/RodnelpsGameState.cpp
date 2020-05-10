@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "RodnelpsGameState.h"
 #include "RodnelpsPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerBoardSpace.h"
 #include "GameElementsGenerator.h"
-
+#include "RodnelpsGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 ARodnelpsGameState::ARodnelpsGameState()
 {
@@ -18,33 +18,11 @@ ARodnelpsPlayerState* ARodnelpsGameState::getActivePlayer()
 	return m_ActivePlayer;
 }
 
-void ARodnelpsGameState::addPlayer(APlayerBoardSpace* playerBoard)
+void ARodnelpsGameState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
-	APlayerController* playerController = UGameplayStatics::GetPlayerController(GetWorld(), playerBoard->getPlayerId());
-	if (playerController == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("playerConetroller nullptr"))
-	}
-	else
-	{
-		ARodnelpsPlayerState* playerState = playerController->GetPlayerState<ARodnelpsPlayerState>();
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-		if (playerState)
-		{
-			playerState->setPlayerBoard(playerBoard);
-			m_PlayersArray.Push(playerState);
-
-			//TODO change this later!
-			if (playerBoard->getPlayerId() == 0)
-			{
-				m_ActivePlayer = playerState;
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("No such playerState"))
-		}
-	}
+	DOREPLIFETIME(ARodnelpsGameState, m_ActivePlayer);
 }
 
 void ARodnelpsGameState::setInterpolationManager(AInterpolationManager* interpolManager)
@@ -67,41 +45,12 @@ void ARodnelpsGameState::setGameElementGenerator(AGameElementsGenerator* gameEle
 	m_GameElementsGenerator = gameElementsGenerator;
 }
 
-void ARodnelpsGameState::endTurn()
+void ARodnelpsGameState::Server_setActivePlayer(ARodnelpsPlayerState* player)
 {
-	if (m_ActivePlayer->isTakingTraders())
-	{
-		m_ActivePlayer->setIsTakingTraders(false);
-		//TODO change active player
-		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
-		return;
-	}
+	check(HasAuthority());
 
-	if (m_ActivePlayer->isTraderPosibbleToGet())
+	if (HasAuthority())
 	{
-		TArray<ATraderCard*> accessibleTradersArray;
-		for (const auto& trader : m_GameElementsGenerator->getTraderArray())
-		{
-			if(m_ActivePlayer->isMeetsTraderRequirements(trader))
-			{
-				accessibleTradersArray.Push(trader);
-			}
-		}
-
-		if (accessibleTradersArray.Num() == 1)
-		{
-			m_ActivePlayer->transferTrader(accessibleTradersArray[0]);
-	
-		}
-		else
-		{
-			m_ActivePlayer->setIsTakingTraders(true);
-			UE_LOG(LogTemp, Warning, TEXT("Take one of traders"))
-		}
-	}
-	else
-	{
-		//TODO change active player
-		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
+		m_ActivePlayer = player;
 	}
 }

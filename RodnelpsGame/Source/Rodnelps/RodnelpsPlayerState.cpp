@@ -8,6 +8,8 @@
 #include "Engine/TargetPoint.h"
 #include "Card.h"
 #include "TraderCard.h"
+#include "RodnelpsGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 ARodnelpsPlayerState::ARodnelpsPlayerState()
 {
@@ -18,24 +20,53 @@ ARodnelpsPlayerState::ARodnelpsPlayerState()
 	m_isTakingTrader = 0;
 	for (size_t i = 0; i < (int)ETokenColor::GOLD; i++)
 	{
-		TArray<AToken*> tokenArray;
-		TArray<ACard*> cardArray;
-		m_CardStacksArray.Push(cardArray);
-		m_TokenStacksArray.Push(tokenArray);
+		m_CardStacksArray.Push(FCardArray());
+		m_TokenStacksArray.Push(FTokenArray());
 	}
 	//tokens have one color more
-	TArray<AToken*> goldTokenArray;
-	m_TokenStacksArray.Push(goldTokenArray);
+	m_TokenStacksArray.Push(FTokenArray());
 
 	//3slots of reserved cards
 	m_ReservedCardArray.Push(nullptr);
 	m_ReservedCardArray.Push(nullptr);
 	m_ReservedCardArray.Push(nullptr);
+
+	m_PlayerId = -1;
+}
+
+void ARodnelpsPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		if (ARodnelpsGameMode* gameMode = GetWorld()->GetAuthGameMode<ARodnelpsGameMode>())
+		{
+			gameMode->RegisterPlayerState(this);
+		}
+	}
+}
+
+void ARodnelpsPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ARodnelpsPlayerState, m_PlayerId);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_PlayerBoard);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_CardStacksArray);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_TokenStacksArray);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_ReservedCardArray);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_TraderCardArray);
 }
 
 void ARodnelpsPlayerState::setPlayerBoard(APlayerBoardSpace* playerBoard)
 {
-	m_PlayerBoard = playerBoard;
+	check(HasAuthority());
+
+	if (HasAuthority())
+	{
+		m_PlayerBoard = playerBoard;
+	}
 }
 
 APlayerBoardSpace* ARodnelpsPlayerState::getPlayerBoard()
@@ -93,28 +124,39 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 	addToken(token);
 }
 
-void ARodnelpsPlayerState::addToken(AToken* token)
+bool ARodnelpsPlayerState::addToken_Validate(AToken* token)
 {
+	return true;
+}
+
+void ARodnelpsPlayerState::addToken_Implementation(AToken* token)
+{
+	//broadcast_AddToken(token);
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	int32 tokenColorIdnex = int32(token->getColor());
-	
-	TArray<AToken*> tokenStackInColor = gamestate->getGameElementGenerator()->getTokenStack(token); 
-	AToken* tokenToAdd = tokenStackInColor.Last();	
+
+	TArray<AToken*> tokenStackInColor = gamestate->getGameElementGenerator()->getTokenStack(token);
+	AToken* tokenToAdd = tokenStackInColor.Last();
 	tokenToAdd->setOwner(this);
-	m_TokenStacksArray[tokenColorIdnex].Push(tokenToAdd);
+	m_TokenStacksArray[tokenColorIdnex].m_Tokens.Push(tokenToAdd);
 	gamestate->getGameElementGenerator()->removeToken(tokenToAdd);
 
 	ATargetPoint* point = getPlayerBoard()->getTokenTargetPoints()[tokenColorIdnex];
-	int32 numOfTokenInStack = m_TokenStacksArray[tokenColorIdnex].Num();
+	int32 numOfTokenInStack = m_TokenStacksArray[tokenColorIdnex].m_Tokens.Num();
 	moveActorOnBoard(tokenToAdd, point->GetActorLocation() + FVector(0.f, 0.f, numOfTokenInStack * 20.f));
 }
 
-void ARodnelpsPlayerState::removeToken(AToken* token)
+void ARodnelpsPlayerState::removeToken_Implementation(AToken* token)
 {
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].Last();
+	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].m_Tokens.Last();
 	gamestate->getGameElementGenerator()->addToken(tokenToRemove);
-	m_TokenStacksArray[int32(tokenToRemove->getColor())].Pop(tokenToRemove);
+	m_TokenStacksArray[int32(tokenToRemove->getColor())].m_Tokens.Pop(tokenToRemove);
+}
+
+bool ARodnelpsPlayerState::removeToken_Validate(AToken* token)
+{
+	return true;
 }
 
 void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate)
@@ -123,14 +165,14 @@ void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamest
 		m_SecondTokenTakenColor = ETokenColor::MAX_COLOURS;
 		m_AreTokensDrawn = 0;
 		m_isTakingTokens = 0;
-		gamestate->endTurn();
+		endTurn();
 }
 
 int32 ARodnelpsPlayerState::getTokenNum()
 {
 	int32 tokenSum = 0;
 	for (const auto& tokenStack : m_TokenStacksArray) {
-		tokenSum += tokenStack.Num();
+		tokenSum += tokenStack.m_Tokens.Num();
 	}
 	return tokenSum;
 }
@@ -158,32 +200,32 @@ void ARodnelpsPlayerState::setIsTakingTraders(bool status)
 bool ARodnelpsPlayerState::areCardRequirementsFulfilled(ACard* card)
 {
 	int32 goldTokenRequired = 0;
-	if (0 < card->getCardInfo()->ReqWhite - (m_CardStacksArray[0].Num() + m_TokenStacksArray[0].Num()))
-		goldTokenRequired += card->getCardInfo()->ReqWhite - (m_CardStacksArray[0].Num() + m_TokenStacksArray[0].Num());
-	if (0 < card->getCardInfo()->ReqBlue - (m_CardStacksArray[1].Num() + m_TokenStacksArray[1].Num()))
-		goldTokenRequired += card->getCardInfo()->ReqBlue - (m_CardStacksArray[1].Num() + m_TokenStacksArray[1].Num());
-	if (0 < card->getCardInfo()->ReqGreen - (m_CardStacksArray[2].Num() + m_TokenStacksArray[2].Num()))
-		goldTokenRequired += card->getCardInfo()->ReqGreen - (m_CardStacksArray[2].Num() + m_TokenStacksArray[2].Num());
-	if (0 < card->getCardInfo()->ReqRed - (m_CardStacksArray[3].Num() + m_TokenStacksArray[3].Num()))
-		goldTokenRequired += card->getCardInfo()->ReqRed - (m_CardStacksArray[3].Num() + m_TokenStacksArray[3].Num());
-	if (0 < card->getCardInfo()->ReqBlack - (m_CardStacksArray[4].Num() + m_TokenStacksArray[4].Num()))
-		goldTokenRequired += card->getCardInfo()->ReqBlack - (m_CardStacksArray[4].Num() + m_TokenStacksArray[4].Num());
+	if (0 < card->getCardInfo()->ReqWhite - (m_CardStacksArray[0].m_Cards.Num() + m_TokenStacksArray[0].m_Tokens.Num()))
+		goldTokenRequired += card->getCardInfo()->ReqWhite - (m_CardStacksArray[0].m_Cards.Num() + m_TokenStacksArray[0].m_Tokens.Num());
+	if (0 < card->getCardInfo()->ReqBlue - (m_CardStacksArray[1].m_Cards.Num() + m_TokenStacksArray[1].m_Tokens.Num()))
+		goldTokenRequired += card->getCardInfo()->ReqBlue - (m_CardStacksArray[1].m_Cards.Num() + m_TokenStacksArray[1].m_Tokens.Num());
+	if (0 < card->getCardInfo()->ReqGreen - (m_CardStacksArray[2].m_Cards.Num() + m_TokenStacksArray[2].m_Tokens.Num()))
+		goldTokenRequired += card->getCardInfo()->ReqGreen - (m_CardStacksArray[2].m_Cards.Num() + m_TokenStacksArray[2].m_Tokens.Num());
+	if (0 < card->getCardInfo()->ReqRed - (m_CardStacksArray[3].m_Cards.Num() + m_TokenStacksArray[3].m_Tokens.Num()))
+		goldTokenRequired += card->getCardInfo()->ReqRed - (m_CardStacksArray[3].m_Cards.Num() + m_TokenStacksArray[3].m_Tokens.Num());
+	if (0 < card->getCardInfo()->ReqBlack - (m_CardStacksArray[4].m_Cards.Num() + m_TokenStacksArray[4].m_Tokens.Num()))
+		goldTokenRequired += card->getCardInfo()->ReqBlack - (m_CardStacksArray[4].m_Cards.Num() + m_TokenStacksArray[4].m_Tokens.Num());
 	
-	return (m_TokenStacksArray[5].Num() >= goldTokenRequired);
+	return (m_TokenStacksArray[5].m_Tokens.Num() >= goldTokenRequired);
 }
 
-void ARodnelpsPlayerState::addCard(ACard* card)
+void ARodnelpsPlayerState::addCard_Implementation(ACard* card)
 {
 	card->setAsTaken();
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 
 	int32 colorIndex = int32(card->getCardInfo()->CardColor);
-	int32 cardsInColor = m_CardStacksArray[colorIndex].Num();
+	int32 cardsInColor = m_CardStacksArray[colorIndex].m_Cards.Num();
 	ATargetPoint* desiredPoint = getPlayerBoard()->getCardTargetPoints()[colorIndex];
 	moveActorOnBoard(card, desiredPoint->GetActorLocation() + FVector(-150.f * cardsInColor, 0.f, 8.f * cardsInColor));
-	
+
 	payForCard(card);
-	m_CardStacksArray[colorIndex].Push(card);
+	m_CardStacksArray[colorIndex].m_Cards.Push(card);
 	if (card->isReserved())
 	{
 		card->setIsReservedStatus(false);
@@ -193,12 +235,13 @@ void ARodnelpsPlayerState::addCard(ACard* card)
 	{
 		gamestate->getGameElementGenerator()->placeNewCard(card);
 	}
-/*
-	if (!isTraderPosibbleToGet())
-	{
-		gamestate->endTurn();
-	}*/
-	gamestate->endTurn();
+
+	endTurn();
+}
+
+bool ARodnelpsPlayerState::addCard_Validate(ACard* card)
+{
+	return true;
 }
 
 bool ARodnelpsPlayerState::isTraderPosibbleToGet()
@@ -224,7 +267,7 @@ void ARodnelpsPlayerState::transferTrader(ATraderCard* trader)
 		m_TraderCardArray.Push(trader);
 		gamestate->getGameElementGenerator()->removeTrader(trader);
 		m_isTakingTrader = true;
-		gamestate->endTurn();
+		endTurn();
 	}
 	else
 	{
@@ -234,11 +277,11 @@ void ARodnelpsPlayerState::transferTrader(ATraderCard* trader)
 
 bool ARodnelpsPlayerState::isMeetsTraderRequirements(ATraderCard* trader)
 {
-	if (trader->getTraderInfo()->ReqWhite <= m_CardStacksArray[0].Num() &&
-		trader->getTraderInfo()->ReqBlue <= m_CardStacksArray[1].Num() &&
-		trader->getTraderInfo()->ReqGreen <= m_CardStacksArray[2].Num() &&
-		trader->getTraderInfo()->ReqRed <= m_CardStacksArray[3].Num() &&
-		trader->getTraderInfo()->ReqBlack <= m_CardStacksArray[4].Num())
+	if (trader->getTraderInfo()->ReqWhite <= m_CardStacksArray[0].m_Cards.Num() &&
+		trader->getTraderInfo()->ReqBlue <= m_CardStacksArray[1].m_Cards.Num() &&
+		trader->getTraderInfo()->ReqGreen <= m_CardStacksArray[2].m_Cards.Num() &&
+		trader->getTraderInfo()->ReqRed <= m_CardStacksArray[3].m_Cards.Num() &&
+		trader->getTraderInfo()->ReqBlack <= m_CardStacksArray[4].m_Cards.Num())
 	{
 		return true;
 	}
@@ -250,15 +293,15 @@ bool ARodnelpsPlayerState::isMeetsTraderRequirements(ATraderCard* trader)
 
 void ARodnelpsPlayerState::payForCard(ACard* card)
 {
-	int32 numOfTokensToDiscard = card->getCardInfo()->ReqWhite - m_CardStacksArray[0].Num();
+	int32 numOfTokensToDiscard = card->getCardInfo()->ReqWhite - m_CardStacksArray[0].m_Cards.Num();
 	payTokenStackForCard(numOfTokensToDiscard, 0);
-	numOfTokensToDiscard = card->getCardInfo()->ReqBlue - m_CardStacksArray[1].Num();
+	numOfTokensToDiscard = card->getCardInfo()->ReqBlue - m_CardStacksArray[1].m_Cards.Num();
 	payTokenStackForCard(numOfTokensToDiscard, 1);
-	numOfTokensToDiscard = card->getCardInfo()->ReqGreen - m_CardStacksArray[2].Num();
+	numOfTokensToDiscard = card->getCardInfo()->ReqGreen - m_CardStacksArray[2].m_Cards.Num();
 	payTokenStackForCard(numOfTokensToDiscard, 2);
-	numOfTokensToDiscard = card->getCardInfo()->ReqRed - m_CardStacksArray[3].Num();
+	numOfTokensToDiscard = card->getCardInfo()->ReqRed - m_CardStacksArray[3].m_Cards.Num();
 	payTokenStackForCard(numOfTokensToDiscard, 3);
-	numOfTokensToDiscard = card->getCardInfo()->ReqBlack - m_CardStacksArray[4].Num();
+	numOfTokensToDiscard = card->getCardInfo()->ReqBlack - m_CardStacksArray[4].m_Cards.Num();
 	payTokenStackForCard(numOfTokensToDiscard, 4);
 }
 
@@ -310,6 +353,8 @@ void ARodnelpsPlayerState::reserveCard(ACard* card)
 
 void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocation)
 {
+	check(HasAuthority());
+
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, actor->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
 	if (Cast<ACard>(actor))
@@ -330,7 +375,30 @@ bool ARodnelpsPlayerState::isTaken_Implementation()
 
 void ARodnelpsPlayerState::setTokenIndex_Implementation(AToken* token)
 {
-	token->setTokenIndex(m_TokenStacksArray[int32(token->getColor())].Num());
+	token->setTokenIndex(m_TokenStacksArray[int32(token->getColor())].m_Tokens.Find(token) + 1);		//indexes from 1
+}
+
+void ARodnelpsPlayerState::setPlayerId(int32 id)
+{
+	check(HasAuthority());
+
+	if (HasAuthority())
+	{
+		m_PlayerId = id;
+	}
+}
+
+void ARodnelpsPlayerState::endTurn_Implementation()
+{
+	if (ARodnelpsGameMode* gameMode = GetWorld()->GetAuthGameMode<ARodnelpsGameMode>())
+	{
+		gameMode->endTurn();
+	}
+}
+
+bool ARodnelpsPlayerState::endTurn_Validate()
+{
+	return true;
 }
 
 void ARodnelpsPlayerState::payTokenStackForCard(int32 tokensNum, int32 stackColorIndex)
@@ -341,13 +409,13 @@ void ARodnelpsPlayerState::payTokenStackForCard(int32 tokensNum, int32 stackColo
 	}
 	while (tokensNum)
 	{
-		if (m_TokenStacksArray[stackColorIndex].Num() == 0)
+		if (m_TokenStacksArray[stackColorIndex].m_Tokens.Num() == 0)
 		{
-			removeToken(m_TokenStacksArray[int32(ETokenColor::GOLD)].Last());
+			removeToken(m_TokenStacksArray[int32(ETokenColor::GOLD)].m_Tokens.Last());
 		}
 		else
 		{
-			removeToken(m_TokenStacksArray[stackColorIndex].Last());
+			removeToken(m_TokenStacksArray[stackColorIndex].m_Tokens.Last());
 		}
 		tokensNum--;
 	}

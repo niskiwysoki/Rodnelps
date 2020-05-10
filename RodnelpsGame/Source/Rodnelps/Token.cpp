@@ -10,6 +10,7 @@
 #include "Materials/Material.h"
 #include "Components/WidgetComponent.h"
 #include "UI/TokenUserWidget.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AToken::AToken() 
@@ -17,7 +18,7 @@ AToken::AToken()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_Color = ETokenColor::GOLD;
+	m_Color = ETokenColor::MAX_COLOURS;
 	m_TokenIndex = 0;
 
 	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -27,6 +28,18 @@ AToken::AToken()
 
 	m_Owner = nullptr;
 
+	bReplicates = true;
+	SetReplicatingMovement(true);
+
+}
+
+void AToken::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(AToken, m_Color);
+	DOREPLIFETIME(AToken, m_Owner);
+	DOREPLIFETIME(AToken, m_TokenIndex);
 }
 
 // Called when the game starts or when spawned
@@ -55,7 +68,7 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 	{
 		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 		ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
-		if (activePlayer->GetPawn()->IsLocallyControlled())
+		if (activePlayer->GetPawn() && activePlayer->GetPawn()->IsLocallyControlled())
 		{
 			if (!activePlayer->isTakingTraders())
 			{
@@ -112,6 +125,7 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 void AToken::setColor(ETokenColor tokenColor)
 {
 	m_Color = tokenColor;
+	onColorRep();
 }
 
 ETokenColor AToken::getColor()
@@ -122,10 +136,24 @@ ETokenColor AToken::getColor()
 void AToken::setOwner(UObject* newOwner)
 {
 	m_Owner = newOwner;
+
+	//SetTokenUI();
+}
+
+void AToken::SetTokenUI()
+{
+	check(HasAuthority());
+
 	if (m_Owner->Implements<UOwnershipInterface>())
 	{
 		IOwnershipInterface::Execute_setTokenIndex(m_Owner, this);
 	}
+
+	Broadcast_SetTokenUI();
+}
+
+void AToken::Broadcast_SetTokenUI_Implementation()
+{
 	UTokenUserWidget* Widget = Cast<UTokenUserWidget>(m_WidgetComp->GetUserWidgetObject());
 	if (Widget)
 		Widget->OnTokenSet(this);
@@ -136,6 +164,11 @@ void AToken::setOwner(UObject* newOwner)
 void AToken::setTokenIndex(int32 index)
 {
 	m_TokenIndex = index;
+}
+
+void AToken::onColorRep()
+{
+	setMaterial(m_TokenMaterialsArray[(int)m_Color]);
 }
 
 void AToken::setMaterial(UMaterial* material)

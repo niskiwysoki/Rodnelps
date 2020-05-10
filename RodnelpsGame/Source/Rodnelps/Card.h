@@ -73,16 +73,16 @@ protected:
 	void logOutCardInfo();
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 	void onSelected(AActor* Target, FKey ButtonPressed);
 
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
+
 	void setCardInfo(FCardSettings* CardInfo);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FCardSettings& GetCardInfoBP() const { return *m_CardSettings;}
+	const FCardSettings& GetCardInfoBP() const { return m_CardSettings;}
 
 	FCardSettings* getCardInfo();
 	
@@ -96,9 +96,24 @@ public:
 	void setIsOnTopOfDeck(bool status);
 
 private:
-	FCardSettings* m_CardSettings;
+
+	UFUNCTION()
+	void onCardSettingsChanged();
+
+private:
+
+	UPROPERTY(ReplicatedUsing = onCardSettingsChanged)
+		FCardSettings m_CardSettings;
+
+	UPROPERTY(Replicated)
 	bool m_isTaken;
+
+	UPROPERTY(Replicated)
 	bool m_isReserved;
+
+	UPROPERTY(Replicated)
 	bool m_IsInDeck;
+
+	UPROPERTY(Replicated)
 	bool m_IsOnTopOfDeck;
 };

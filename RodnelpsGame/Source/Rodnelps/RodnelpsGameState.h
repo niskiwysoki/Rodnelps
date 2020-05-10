@@ -22,7 +22,7 @@ public:
 
 	ARodnelpsPlayerState* getActivePlayer();
 
-	void addPlayer(APlayerBoardSpace* playerBoard);
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
 
 	void setInterpolationManager(AInterpolationManager* interpolationManager);
 	AInterpolationManager* GetInterpolationManager();
@@ -30,11 +30,13 @@ public:
 	AGameElementsGenerator* getGameElementGenerator();
 	void setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator);
 
-	void endTurn();
+	void Server_setActivePlayer(ARodnelpsPlayerState* player);
 
 private:
+
+	UPROPERTY(replicated)
 	ARodnelpsPlayerState* m_ActivePlayer;
-	TArray<ARodnelpsPlayerState*> m_PlayersArray;
+
 	AInterpolationManager* m_InterpolManager;
 	AGameElementsGenerator* m_GameElementsGenerator;
 };

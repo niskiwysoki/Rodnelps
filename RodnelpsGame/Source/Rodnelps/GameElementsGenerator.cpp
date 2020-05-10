@@ -12,6 +12,7 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "RodnelpsGameState.h"
+#include "Net/UnrealNetwork.h"
 
 
 
@@ -20,7 +21,16 @@ AGameElementsGenerator::AGameElementsGenerator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	bReplicates = true;
+}
+
+void AGameElementsGenerator::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
+	DOREPLIFETIME(AGameElementsGenerator, m_DecksArray);
+	DOREPLIFETIME(AGameElementsGenerator, m_TokenStacsArray);
 }
 
 // Called when the game starts or when spawned
@@ -31,19 +41,8 @@ void AGameElementsGenerator::BeginPlay()
 	ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gameState->setGameElementGenerator(this);
 
-
-	/*int32 id = 0;
-	for (FConstPlayerControllerIterator iter = GetWorld()->GetPlayerControllerIterator(); iter; ++iter) {
-		APlayerController* playerController = iter->Get();
-		UGameplayStatics::SetPlayerControllerID(playerController, id);
-		++id;
-	}*/
-
-	generateDecks(6.f, 620.f);
-	generateTraders(500.f);
-	generateTokens();
-	LayOutTheCards();
-
+	if(HasAuthority())
+		generateGamePieces();
 }
 
 void AGameElementsGenerator::LayOutTheCards()
@@ -54,7 +53,7 @@ void AGameElementsGenerator::LayOutTheCards()
 	{
 		for (int32 cardIndex = 0; cardIndex < 4; ++cardIndex)	//cardIndex == 0 -> topCardOfDeck;
 		{
-			ACard* topDeckCard = m_DecksArray[deckIndex].Last();
+			ACard* topDeckCard = m_DecksArray[deckIndex].m_Cards.Last();
 			FVector targetLocation = GetActorLocation() + FVector(620.f + 620.f * deckIndex, 610.f + 500 * cardIndex, 300.f);
 			FRotator targetRotation = topDeckCard->GetActorRotation() + FRotator(0.f, 0.f, 180.f);
 			interpolMaganger->setDesiredLocation(topDeckCard, targetLocation, 0.f);
@@ -64,9 +63,9 @@ void AGameElementsGenerator::LayOutTheCards()
 			interpolMaganger->setDesiredLocation(topDeckCard, targetLocation, 0.f);
 			topDeckCard->setAsNotInDeck();
 
-			m_DecksArray[deckIndex].Pop();
+			m_DecksArray[deckIndex].m_Cards.Pop();
 		}
-		m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
+		m_DecksArray[deckIndex].m_Cards.Last()->setIsOnTopOfDeck(true);
 	}
 }
 
@@ -78,36 +77,35 @@ void AGameElementsGenerator::generateTokens()
 	float heightBetweenTokens = 15.f;
 	for (int32 i = 0; i < stacksNum; ++i)
 	{
-		TArray<AToken*> tokenStack;
+		FTokenArray tokenStack;
 		for (int32 j = 0; j < tokensInStack; ++j)
 		{
 			FVector NewLocation = GetActorLocation() + FVector(0, 270.f + distanceBetweenStacks * i, heightBetweenTokens * j - 30.f);
 			AToken* token = GetWorld()->SpawnActor<AToken>(m_TokenToSpawn, NewLocation, FRotator::ZeroRotator);
 			token->setColor((ETokenColor)i);
-			token->setMaterial(m_TokenMaterialsArray[i]);
 			//token->setOwner(this);
-			tokenStack.Push(token);
+			tokenStack.m_Tokens.Push(token);
 		}
 		m_TokenStacsArray.Push(tokenStack);
 	}
 	//Gold token stack
-	TArray<AToken*> tokenStack;
+	FTokenArray tokenStack;
 	for (int32 j = 0; j < 5; ++j)
 	{
 		FVector NewLocation = GetActorLocation() + FVector(0, 270.f + distanceBetweenStacks * stacksNum, heightBetweenTokens * j - 30.f);
 		AToken* token = GetWorld()->SpawnActor<AToken>(m_TokenToSpawn, NewLocation, FRotator::ZeroRotator);
-		token->setColor((ETokenColor)stacksNum);  // stacksNum = i = 5
-		token->setMaterial(m_TokenMaterialsArray[stacksNum]);
+		token->setColor(ETokenColor::GOLD);
 		//token->setOwner(this);
-		tokenStack.Push(token);
+		tokenStack.m_Tokens.Push(token);
 	}
 	m_TokenStacsArray.Push(tokenStack);
 
 	//setOwners+setIndexes
 	for (auto& array : m_TokenStacsArray)
-		for (auto& token : array)
+		for (auto& token : array.m_Tokens)
 		{
 			token->setOwner(this);
+			token->SetTokenUI();
 		}
 }
 
@@ -117,36 +115,49 @@ void AGameElementsGenerator::addToken(AToken* token)
 
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
-	gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].Num() - 30.f), 0.f);
+	gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].m_Tokens.Num() - 30.f), 0.f);
 
-	m_TokenStacsArray[int32(color)].Push(token);
+	m_TokenStacsArray[int32(color)].m_Tokens.Push(token);
 	token->setOwner(this);
 }
 
 void AGameElementsGenerator::removeToken(AToken* token)
 {
 	ETokenColor color = token->getColor();
-	m_TokenStacsArray[int32(color)].Pop();
+	m_TokenStacsArray[int32(color)].m_Tokens.Pop();
 }
 
 int32 AGameElementsGenerator::getStackSize(AToken* token)
 {
-	return m_TokenStacsArray[int32(token->getColor())].Num();
+	return m_TokenStacsArray[int32(token->getColor())].m_Tokens.Num();
 }
 
 TArray<AToken*> AGameElementsGenerator::getGoldTokenStack()
 {
-	return m_TokenStacsArray[int32(ETokenColor::GOLD)];
+	return m_TokenStacsArray[int32(ETokenColor::GOLD)].m_Tokens;
 }
 
 TArray<AToken*> AGameElementsGenerator::getTokenStack(AToken* token)
 {
-	return m_TokenStacsArray[int32(token->getColor())];
+	return m_TokenStacsArray[int32(token->getColor())].m_Tokens;
 }
 
-TArray<ATraderCard*> AGameElementsGenerator::getTraderArray()
+const TArray<ATraderCard*>& AGameElementsGenerator::getTraderArray()
 {
 	return m_TradersArray;
+}
+
+void AGameElementsGenerator::generateGamePieces()
+{
+	check(HasAuthority());
+
+	if (HasAuthority())
+	{
+		generateDecks(6.f, 620.f);
+		generateTraders(500.f);
+		generateTokens();
+		LayOutTheCards();
+	}
 }
 
 void AGameElementsGenerator::removeTrader(ATraderCard* trader)
@@ -157,9 +168,9 @@ void AGameElementsGenerator::removeTrader(ATraderCard* trader)
 void AGameElementsGenerator::placeNewCard(ACard* card)
 {
 	int32 deckIndex = card->getCardInfo()->CardTier - 1;
-	if (m_DecksArray[deckIndex].Num() != 0)
+	if (m_DecksArray[deckIndex].m_Cards.Num() != 0)
 	{
-		ACard* topDeckCard = m_DecksArray[deckIndex].Last();
+		ACard* topDeckCard = m_DecksArray[deckIndex].m_Cards.Last();
 		if (!card->isOnTopOfDeck())
 		{
 			FVector targetLocation = card->GetActorLocation() + FVector(0.f, 0.f, 300.f);
@@ -172,9 +183,9 @@ void AGameElementsGenerator::placeNewCard(ACard* card)
 		}
 		topDeckCard->setAsNotInDeck();
 		topDeckCard->setIsOnTopOfDeck(false);
-		m_DecksArray[deckIndex].Pop();
-		if (m_DecksArray[deckIndex].Num() != 0)
-			m_DecksArray[deckIndex].Last()->setIsOnTopOfDeck(true);
+		m_DecksArray[deckIndex].m_Cards.Pop();
+		if (m_DecksArray[deckIndex].m_Cards.Num() != 0)
+			m_DecksArray[deckIndex].m_Cards.Last()->setIsOnTopOfDeck(true);
 	}
 }
 
@@ -211,7 +222,7 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 	int32 deckIndex = 0;
 	for (const auto& table : m_CardTablesArray)
 	{
-		TArray<ACard*> cardsArray;
+		FCardArray cardsArray;
 		TArray<FCardSettings*> cardsStructsArray;
 		
 		for (const auto& cardStruct : table->GetRowMap())
@@ -225,7 +236,7 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 			FVector NewLocation = GetActorLocation() + FVector(620.f + distanceBetweenDecks * deckIndex, 100.f, cardHeightDiffrence * cardIndex - 30.f);
 			ACard* Card = GetWorld()->SpawnActor<ACard>(m_CardToSpawn, NewLocation, FRotator::ZeroRotator);
 			Card->setCardInfo(cardSettings);
-			cardsArray.Push(Card);
+			cardsArray.m_Cards.Push(Card);
 			cardsStructsArray.Remove(cardSettings);		//TODO Remove() removes all instances of item in array !!
 			cardIndex++; 
 		}
@@ -241,7 +252,7 @@ bool AGameElementsGenerator::isTaken_Implementation()
 
 void AGameElementsGenerator::setTokenIndex_Implementation(AToken* token)
 {
-	token->setTokenIndex(m_TokenStacsArray[int32(token->getColor())].Find(token));
+	token->setTokenIndex(m_TokenStacsArray[int32(token->getColor())].m_Tokens.Find(token) + 1);	//indexes from 1 
 }
 
 // Called every frame

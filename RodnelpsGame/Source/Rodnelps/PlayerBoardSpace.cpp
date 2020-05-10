@@ -4,6 +4,7 @@
 #include "PlayerBoardSpace.h"
 #include "Kismet/GameplayStatics.h"
 #include "RodnelpsGameState.h"
+#include "RodnelpsGameMode.h"
 
 // Sets default values
 APlayerBoardSpace::APlayerBoardSpace()
@@ -23,10 +24,12 @@ void APlayerBoardSpace::BeginPlay()
 	}
 	else
 	{
-		ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>();
-		gameState->addPlayer(this);
-	}
-	
+		if (HasAuthority())
+		{
+			ARodnelpsGameMode* gameMode = GetWorld()->GetAuthGameMode<ARodnelpsGameMode>();
+			gameMode->registerPlayerBoard(this);
+		}
+	}	
 }
 
 // Called every frame
