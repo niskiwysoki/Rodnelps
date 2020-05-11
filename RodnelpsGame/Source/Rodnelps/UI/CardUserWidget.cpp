@@ -23,6 +23,9 @@ void UCardUserWidget::setCard(ACard* card)
 
 void UCardUserWidget::NotifyCardDataChanged()
 {
+	if (!m_Card)
+		return;
+
 	OnCardSet(m_Card);
 	m_VictoryPointsText->SetText(FText::AsNumber(m_Card->getCardInfo()->VictoryPoints));
 }

@@ -68,9 +68,9 @@ void ARodnelpsGameMode::setActivePlayer(ARodnelpsPlayerState* player)
 	{
 		m_ActivePlayer = player;
 
-		if (ARodnelpsGameState* state = GetWorld()->GetGameState<ARodnelpsGameState>())
+		if (ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>())
 		{
-			state->Server_setActivePlayer(player);
+			gameState->Server_setActivePlayer(player);
 		}
 	}
 }
@@ -92,7 +92,6 @@ void ARodnelpsGameMode::endTurn()
 	if (m_ActivePlayer->isTakingTraders())
 	{
 		m_ActivePlayer->setIsTakingTraders(false);
-		//TODO change active player
 		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
 			return;
 	}
@@ -114,7 +113,6 @@ void ARodnelpsGameMode::endTurn()
 		if (accessibleTradersArray.Num() == 1)
 		{
 			m_ActivePlayer->transferTrader(accessibleTradersArray[0]);
-
 		}
 		else
 		{
@@ -124,7 +122,6 @@ void ARodnelpsGameMode::endTurn()
 	}
 	else
 	{
-		//TODO change active player
 		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
 		setNextActivePlayer();		
 	}

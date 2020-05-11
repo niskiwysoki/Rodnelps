@@ -51,7 +51,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -60,17 +62,25 @@ public:
 
 	void SetTraderInfo(FTraderSettings* TraderInfo);
 
+	void SyncWidgetData();
+
 	FTraderSettings* getTraderInfo();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const FTraderSettings& GetTraderInfoBP() const { return *m_TraderSettings; }
+	const FTraderSettings& GetTraderInfoBP() const { return m_TraderSettings; }
 
 	bool isTaken();
 	void setIsTaken(bool status);
 
-private:
-	FTraderSettings* m_TraderSettings;
-	bool m_isTaken;
+	UFUNCTION()
+	void onTraderSettingsChanged();
 
+private:
+
+	UPROPERTY(ReplicatedUsing = onTraderSettingsChanged)
+	FTraderSettings m_TraderSettings;
+
+	UPROPERTY(Replicated)
+	bool m_isTaken;
 
 };

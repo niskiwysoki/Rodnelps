@@ -15,7 +15,6 @@ class AToken;
 class AInterpolationManager;
 class UMaterial;
 
-
 UCLASS()
 class RODNELPS_API AGameElementsGenerator : public AActor, public IOwnershipInterface
 {

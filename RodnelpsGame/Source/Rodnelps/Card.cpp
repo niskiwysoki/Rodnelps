@@ -61,7 +61,7 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 	ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
 	logOutCardInfo();
 
-	if (activePlayer->GetPawn()->IsLocallyControlled())
+	if (activePlayer->GetPawn() && activePlayer->GetPawn()->IsLocallyControlled())
 	{
 		if (!activePlayer->isTakingTokens())
 		{

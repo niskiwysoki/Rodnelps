@@ -103,7 +103,7 @@ private:
 private:
 
 	UPROPERTY(ReplicatedUsing = onCardSettingsChanged)
-		FCardSettings m_CardSettings;
+	FCardSettings m_CardSettings;
 
 	UPROPERTY(Replicated)
 	bool m_isTaken;

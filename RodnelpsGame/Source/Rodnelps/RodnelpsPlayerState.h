@@ -34,9 +34,12 @@ public:
 	void addToken(AToken* token);
 
 	UFUNCTION(Server, WithValidation, Reliable)
+	void Server_removeToken(AToken* token);
+
 	void removeToken(AToken* token);
 
 	void resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate);
+
 	int32 getTokenNum();
 	bool areTokensDrawn();
 	bool isTakingTokens();
@@ -50,10 +53,14 @@ public:
 
 	bool isTraderPosibbleToGet();
 
+	UFUNCTION(Server, WithValidation, Reliable)
 	void transferTrader(ATraderCard* trader);
+
 	bool isMeetsTraderRequirements(ATraderCard* trader);
 
 	void payForCard(ACard* card);
+
+	UFUNCTION(Server, WithValidation, Reliable)
 	void reserveCard(ACard* card);
 
 	void moveActorOnBoard(AActor* actor, FVector desiredLocation);
@@ -81,6 +88,8 @@ private:
 	ETokenColor m_SecondTokenTakenColor;
 	bool m_AreTokensDrawn;
 	bool m_isTakingTokens;
+
+	UPROPERTY(Replicated)
 	bool m_isTakingTrader;
 
 	UPROPERTY(Replicated)

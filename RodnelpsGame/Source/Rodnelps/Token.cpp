@@ -30,7 +30,6 @@ AToken::AToken()
 
 	bReplicates = true;
 	SetReplicatingMovement(true);
-
 }
 
 void AToken::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const

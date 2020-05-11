@@ -57,6 +57,7 @@ void ARodnelpsPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 	DOREPLIFETIME(ARodnelpsPlayerState, m_TokenStacksArray);
 	DOREPLIFETIME(ARodnelpsPlayerState, m_ReservedCardArray);
 	DOREPLIFETIME(ARodnelpsPlayerState, m_TraderCardArray);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_isTakingTrader);
 }
 
 void ARodnelpsPlayerState::setPlayerBoard(APlayerBoardSpace* playerBoard)
@@ -146,7 +147,7 @@ void ARodnelpsPlayerState::addToken_Implementation(AToken* token)
 	moveActorOnBoard(tokenToAdd, point->GetActorLocation() + FVector(0.f, 0.f, numOfTokenInStack * 20.f));
 }
 
-void ARodnelpsPlayerState::removeToken_Implementation(AToken* token)
+void ARodnelpsPlayerState::Server_removeToken_Implementation(AToken* token)
 {
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].m_Tokens.Last();
@@ -154,9 +155,20 @@ void ARodnelpsPlayerState::removeToken_Implementation(AToken* token)
 	m_TokenStacksArray[int32(tokenToRemove->getColor())].m_Tokens.Pop(tokenToRemove);
 }
 
-bool ARodnelpsPlayerState::removeToken_Validate(AToken* token)
+bool ARodnelpsPlayerState::Server_removeToken_Validate(AToken* token)
 {
 	return true;
+}
+
+void ARodnelpsPlayerState::removeToken(AToken* token)
+{
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].m_Tokens.Last();
+	gamestate->getGameElementGenerator()->addToken(tokenToRemove);
+	m_TokenStacksArray[int32(tokenToRemove->getColor())].m_Tokens.Pop(tokenToRemove);
+
+	if(!HasAuthority())
+		Server_removeToken(token);
 }
 
 void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate)
@@ -216,6 +228,8 @@ bool ARodnelpsPlayerState::areCardRequirementsFulfilled(ACard* card)
 
 void ARodnelpsPlayerState::addCard_Implementation(ACard* card)
 {
+	if (card->isTaken() && !card->isReserved())
+		return;
 	card->setAsTaken();
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 
@@ -257,8 +271,10 @@ bool ARodnelpsPlayerState::isTraderPosibbleToGet()
 	return false;
 }
 
-void ARodnelpsPlayerState::transferTrader(ATraderCard* trader)
+void ARodnelpsPlayerState::transferTrader_Implementation(ATraderCard* trader)
 {
+	if (trader->isTaken())
+		return;
 	if (m_TraderCardArray.Num() < 4)
 	{
 		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
@@ -273,6 +289,11 @@ void ARodnelpsPlayerState::transferTrader(ATraderCard* trader)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Too many traders!!"));
 	}
+}
+
+bool ARodnelpsPlayerState::transferTrader_Validate(ATraderCard* trader)
+{
+	return true;
 }
 
 bool ARodnelpsPlayerState::isMeetsTraderRequirements(ATraderCard* trader)
@@ -305,7 +326,7 @@ void ARodnelpsPlayerState::payForCard(ACard* card)
 	payTokenStackForCard(numOfTokensToDiscard, 4);
 }
 
-void ARodnelpsPlayerState::reserveCard(ACard* card)
+void ARodnelpsPlayerState::reserveCard_Implementation(ACard* card)
 {
 	int32 reservedCardIndex = 0;
 	for (auto& cardField : m_ReservedCardArray)
@@ -350,6 +371,12 @@ void ARodnelpsPlayerState::reserveCard(ACard* card)
 		resetTokenStatusAndEndTurn(gamestate);
 	}
 }
+
+bool ARodnelpsPlayerState::reserveCard_Validate(ACard* card)
+{
+	return true;
+}
+
 
 void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocation)
 {

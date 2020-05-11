@@ -113,10 +113,12 @@ void AGameElementsGenerator::addToken(AToken* token)
 {
 	ETokenColor color = token->getColor();
 
-	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
-	gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].m_Tokens.Num() - 30.f), 0.f);
-
+	if(HasAuthority())
+	{ 
+		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+		gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+		gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].m_Tokens.Num() - 30.f), 0.f);
+	}
 	m_TokenStacsArray[int32(color)].m_Tokens.Push(token);
 	token->setOwner(this);
 }

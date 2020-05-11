@@ -42,6 +42,7 @@ void APlayerPawn::Tick(float DeltaTime)
 	{
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime);
 		SetActorLocation(NewLocation);
+		CurrentVelocity = FVector::ZeroVector;
 	}
 }
 
@@ -59,17 +60,17 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void APlayerPawn::Move_XAxis(float AxisValue)
 {
 	// Move at 100 units per second forward or backward
-	CurrentVelocity.X = FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed;
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed, 0.f, 0.f));
 }
 
 void APlayerPawn::Move_YAxis(float AxisValue)
 {
 	// Move at 100 units per second right or left
-	CurrentVelocity.Y = FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed;
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed, 0.f));
 }
 
 void APlayerPawn::Move_ZAxis(float AxisValue)
 {
 	// Move at 100 units per second forward or backward
-	CurrentVelocity.Z = FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed *3;
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, 0.f,FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed * 3));
 }
