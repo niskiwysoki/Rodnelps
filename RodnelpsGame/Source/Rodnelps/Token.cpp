@@ -135,8 +135,6 @@ ETokenColor AToken::getColor()
 void AToken::setOwner(UObject* newOwner)
 {
 	m_Owner = newOwner;
-
-	//SetTokenUI();
 }
 
 void AToken::SetTokenUI()

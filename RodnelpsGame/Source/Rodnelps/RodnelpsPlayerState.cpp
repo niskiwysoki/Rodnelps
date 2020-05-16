@@ -153,6 +153,7 @@ void ARodnelpsPlayerState::Server_removeToken_Implementation(AToken* token)
 	AToken* tokenToRemove = m_TokenStacksArray[int32(token->getColor())].m_Tokens.Last();
 	gamestate->getGameElementGenerator()->addToken(tokenToRemove);
 	m_TokenStacksArray[int32(tokenToRemove->getColor())].m_Tokens.Pop(tokenToRemove);
+
 }
 
 bool ARodnelpsPlayerState::Server_removeToken_Validate(AToken* token)
@@ -236,7 +237,10 @@ void ARodnelpsPlayerState::addCard_Implementation(ACard* card)
 	int32 colorIndex = int32(card->getCardInfo()->CardColor);
 	int32 cardsInColor = m_CardStacksArray[colorIndex].m_Cards.Num();
 	ATargetPoint* desiredPoint = getPlayerBoard()->getCardTargetPoints()[colorIndex];
-	moveActorOnBoard(card, desiredPoint->GetActorLocation() + FVector(-150.f * cardsInColor, 0.f, 8.f * cardsInColor));
+
+
+	FRotator vectOrient = FRotator(0, -90.f * m_PlayerId, 0);
+	moveActorOnBoard(card, desiredPoint->GetActorLocation() + vectOrient.RotateVector(FVector(-150.f * cardsInColor, 0.f, 8.f * cardsInColor)));
 
 	payForCard(card);
 	m_CardStacksArray[colorIndex].m_Cards.Push(card);
@@ -392,6 +396,7 @@ void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocati
 			gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, 0.f, 180.f), 0.f);
 		}
 	}
+	gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, -90.f*(m_PlayerId), 0.f), 0.f);
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, desiredLocation, 0.f);
 }
 

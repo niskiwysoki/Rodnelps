@@ -103,6 +103,5 @@ void AInterpolationManager::Tick(float DeltaTime)
 			PrimaryActorTick.SetTickFunctionEnable(false);
 		}
 	}
-	
 }
 

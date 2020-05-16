@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "RodnelpsGameState.h"
 #include "Net/UnrealNetwork.h"
+#include "RodnelpsPlayerState.h"
 
 
 
@@ -117,6 +118,7 @@ void AGameElementsGenerator::addToken(AToken* token)
 	{ 
 		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 		gamestate->GetInterpolationManager()->setDesiredLocation(token, token->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+		gamestate->GetInterpolationManager()->setDesiredRotation(token, token->GetActorRotation() + FRotator(0.f, 90.f*(gamestate->getActivePlayer()->getPlayerId()), 0.f), 0.f);    //
 		gamestate->GetInterpolationManager()->setDesiredLocation(token, GetActorLocation() + FVector(0, 270.f + 400 * int32(color), 15 * m_TokenStacsArray[int32(color)].m_Tokens.Num() - 30.f), 0.f);
 	}
 	m_TokenStacsArray[int32(color)].m_Tokens.Push(token);

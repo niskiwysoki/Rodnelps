@@ -26,6 +26,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void caclculatePlayerHeight();
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -39,6 +41,7 @@ private:
 	FVector CurrentVelocity;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
-	int CameraMovementSpeed;
+	int m_cameraMovementSpeed;
+	float m_playerHeight;
 
 };

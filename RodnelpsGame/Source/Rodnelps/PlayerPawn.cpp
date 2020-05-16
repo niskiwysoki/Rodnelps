@@ -5,13 +5,13 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	//AutoPossessPlayer = EAutoReceiveInput::Player0;
 
 	VisibleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisibleComponent"));
 	VisibleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -21,7 +21,9 @@ APlayerPawn::APlayerPawn()
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
 	Camera->SetupAttachment(RootComponent);
 	Camera->SetRelativeRotation(FRotator(-75.0f, 0.0f, 0.0f));
-	CameraMovementSpeed = 800;
+	m_cameraMovementSpeed = 800;
+	m_playerHeight = 0;
+
 }
 
 // Called when the game starts or when spawned
@@ -36,13 +38,30 @@ void APlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Handle movement based on our "MoveX" and "MoveY" axes
 
 	if (!CurrentVelocity.IsZero())
 	{
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime);
 		SetActorLocation(NewLocation);
 		CurrentVelocity = FVector::ZeroVector;
+	}
+
+	caclculatePlayerHeight();
+
+}
+
+
+void APlayerPawn::caclculatePlayerHeight()
+{
+	FHitResult outHit;
+	FVector startVector = GetActorLocation();
+	FVector endVector = GetActorLocation() + FVector(0.f, 0.f, -3000.f);
+	if (GetWorld()->LineTraceSingleByChannel(outHit, startVector, endVector, ECollisionChannel::ECC_Visibility))
+	{
+		if (outHit.bBlockingHit)
+		{
+			m_playerHeight = outHit.Distance;
+		}
 	}
 }
 
@@ -59,18 +78,15 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerPawn::Move_XAxis(float AxisValue)
 {
-	// Move at 100 units per second forward or backward
-	CurrentVelocity += GetActorRotation().RotateVector(FVector(FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed, 0.f, 0.f));
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(FMath::Clamp(AxisValue, -1.0f, 1.0f) * m_playerHeight * 0.6, 0.f, 0.f));
 }
 
 void APlayerPawn::Move_YAxis(float AxisValue)
 {
-	// Move at 100 units per second right or left
-	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed, 0.f));
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, FMath::Clamp(AxisValue, -1.0f, 1.0f) * m_playerHeight * 0.6, 0.f));
 }
 
 void APlayerPawn::Move_ZAxis(float AxisValue)
 {
-	// Move at 100 units per second forward or backward
-	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, 0.f,FMath::Clamp(AxisValue, -1.0f, 1.0f) * CameraMovementSpeed * 3));
+	CurrentVelocity += GetActorRotation().RotateVector(FVector(0.f, 0.f,FMath::Clamp(AxisValue, -1.0f, 1.0f) * m_playerHeight ));
 }
