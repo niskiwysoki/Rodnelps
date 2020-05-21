@@ -23,7 +23,7 @@ APlayerPawn::APlayerPawn()
 	Camera->SetRelativeRotation(FRotator(-75.0f, 0.0f, 0.0f));
 	m_cameraMovementSpeed = 800;
 	m_playerHeight = 0;
-
+	
 }
 
 // Called when the game starts or when spawned

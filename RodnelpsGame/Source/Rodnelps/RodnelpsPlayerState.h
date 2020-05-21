@@ -79,8 +79,12 @@ private:
 	UFUNCTION(Server, WithValidation, Reliable)
 	void endTurn();
 
-private:
 
+protected:
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	int32 m_PlayerId;
+
+private:
 	UPROPERTY(Replicated)
 	TArray<FTokenArray> m_TokenStacksArray;
 
@@ -103,9 +107,6 @@ private:
 
 	void payTokenStackForCard(int32 tokensNum, int32 colorIndex);
 
-	UPROPERTY(replicated)
-	int32 m_PlayerId;
-
-	UPROPERTY(replicated)
+	UPROPERTY(Replicated)
 	APlayerBoardSpace* m_PlayerBoard;
 };
