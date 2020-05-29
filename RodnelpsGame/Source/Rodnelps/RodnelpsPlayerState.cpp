@@ -10,14 +10,17 @@
 #include "TraderCard.h"
 #include "RodnelpsGameMode.h"
 #include "Net/UnrealNetwork.h"
+#include "RodnelpsPlayerController.h"
 
 ARodnelpsPlayerState::ARodnelpsPlayerState()
 {
 	m_FirstTokenTakenColor = ETokenColor::MAX_COLOURS;
 	m_SecondTokenTakenColor = ETokenColor::MAX_COLOURS;
-	m_AreTokensDrawn = 0;
-	m_isTakingTokens = 0;
-	m_isTakingTrader = 0;
+	m_AreTokensDrawn = false;
+	m_isTakingTokens = false;
+	m_isTakingTrader = false;
+	m_VictoryPoints = 0;
+
 	for (size_t i = 0; i < (int)ETokenColor::GOLD; i++)
 	{
 		m_CardStacksArray.Push(FCardArray());
@@ -31,7 +34,7 @@ ARodnelpsPlayerState::ARodnelpsPlayerState()
 	m_ReservedCardArray.Push(nullptr);
 	m_ReservedCardArray.Push(nullptr);
 
-	m_PlayerId = -1;
+	m_PlayerId = 0;
 }
 
 void ARodnelpsPlayerState::BeginPlay()
@@ -81,11 +84,13 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 	if((token->getColor() == m_FirstTokenTakenColor || m_SecondTokenTakenColor == token->getColor()) && m_SecondTokenTakenColor != ETokenColor::MAX_COLOURS)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Taken other token than first or second"));
+		sendGuideMessage("Taken other token than first or second");
 		return;
 	}
 
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
-	
+	bool bResetAndEndTurn = false;
+
 	if (m_FirstTokenTakenColor == ETokenColor::MAX_COLOURS)
 	{
 		m_FirstTokenTakenColor = token->getColor();
@@ -98,6 +103,7 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 			if ((token->getColor() == m_FirstTokenTakenColor) && (gamestate->getGameElementGenerator()->getStackSize(token) < 3))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("You can't take 2 tokens from stack with size 3 or less"));
+				sendGuideMessage("You can't take 2 tokens from stack with size 3 or less");
 				return;
 			}
 			else
@@ -108,7 +114,7 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 					m_AreTokensDrawn = true;
 					if (getTokenNum() < 10)
 					{
-						resetTokenStatusAndEndTurn(gamestate);
+						bResetAndEndTurn = true;
 					}
 				}
 			}
@@ -118,11 +124,15 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 			m_AreTokensDrawn = true;
 			if (getTokenNum() < 10)
 			{
-				resetTokenStatusAndEndTurn(gamestate);
+				bResetAndEndTurn = true;
 			}
 		}
 	}
 	addToken(token);
+	if (bResetAndEndTurn)
+	{
+		resetTokenStatusAndEndTurn(gamestate);
+	}
 }
 
 bool ARodnelpsPlayerState::addToken_Validate(AToken* token)
@@ -238,11 +248,11 @@ void ARodnelpsPlayerState::addCard_Implementation(ACard* card)
 	int32 cardsInColor = m_CardStacksArray[colorIndex].m_Cards.Num();
 	ATargetPoint* desiredPoint = getPlayerBoard()->getCardTargetPoints()[colorIndex];
 
-
 	FRotator vectOrient = FRotator(0, -90.f * m_PlayerId, 0);
 	moveActorOnBoard(card, desiredPoint->GetActorLocation() + vectOrient.RotateVector(FVector(-150.f * cardsInColor, 0.f, 8.f * cardsInColor)));
 
 	payForCard(card);
+	m_VictoryPoints += card->getCardInfo()->VictoryPoints;
 	m_CardStacksArray[colorIndex].m_Cards.Push(card);
 	if (card->isReserved())
 	{
@@ -284,6 +294,7 @@ void ARodnelpsPlayerState::transferTrader_Implementation(ATraderCard* trader)
 		ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 		moveActorOnBoard(trader, m_PlayerBoard->getTraderTargetPoints()[m_TraderCardArray.Num()]->GetActorLocation());
 		trader->setIsTaken(true);
+		m_VictoryPoints += 3;			//3 Victory points for a trader
 		m_TraderCardArray.Push(trader);
 		gamestate->getGameElementGenerator()->removeTrader(trader);
 		m_isTakingTrader = true;
@@ -388,15 +399,18 @@ void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocati
 
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, actor->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
+
+	float roll = 0.f;
 	if (Cast<ACard>(actor))
 	{
 		ACard* card = Cast<ACard>(actor);
 		if (card->isOnTopOfDeck())
 		{
 			gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, 0.f, 180.f), 0.f);
+			roll += 180.f;
 		}
 	}
-	gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, -90.f*(m_PlayerId), 0.f), 0.f);
+	gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, -90.f*(m_PlayerId), roll), 0.f);
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, desiredLocation, 0.f);
 }
 
@@ -417,6 +431,28 @@ void ARodnelpsPlayerState::setPlayerId(int32 id)
 	if (HasAuthority())
 	{
 		m_PlayerId = id;
+	}
+}
+
+void ARodnelpsPlayerState::broadcast_SendGuideMessage_Implementation(const FString &message)
+{
+	if (ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(GetOwner()))
+	{
+		if (controller->IsLocalController())
+		{
+			sendGuideMessage(message);
+		}
+	}
+}
+
+void ARodnelpsPlayerState::broadcast_showMessageOnCenterOfScreen_Implementation(const FString& message, float messageTime)
+{
+	if (ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(GetOwner()))
+	{
+		if (controller->IsLocalController())
+		{
+			showMessageOnCenterOfScreen(message, messageTime);
+		}
 	}
 }
 

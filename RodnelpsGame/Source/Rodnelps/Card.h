@@ -9,6 +9,7 @@
 
 class UWidgetComponent;
 class UStaticMeshComponent;
+class UMaterial;
 
 UENUM(BlueprintType)
 enum class ECardColor : uint8
@@ -81,6 +82,8 @@ public:
 
 	void setCardInfo(FCardSettings* CardInfo);
 
+	void setMaterial(int materialIndex);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	const FCardSettings& GetCardInfoBP() const { return m_CardSettings;}
 
@@ -101,6 +104,8 @@ private:
 	void onCardSettingsChanged();
 
 private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Card", meta = (AllowPrivateAccess = "true"))
+	TArray<UMaterialInstance*> m_CardMaterialsArray;
 
 	UPROPERTY(ReplicatedUsing = onCardSettingsChanged)
 	FCardSettings m_CardSettings;

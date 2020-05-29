@@ -60,6 +60,7 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	ARodnelpsPlayerState* activePlayer = gamestate->getActivePlayer();
 	logOutCardInfo();
+	
 
 	if (activePlayer->GetPawn() && activePlayer->GetPawn()->IsLocallyControlled())
 	{
@@ -80,16 +81,19 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 							else
 							{
 								UE_LOG(LogTemp, Warning, TEXT("You don't meet card requirements"))
+								activePlayer->sendGuideMessage("You don't meet card requirements");
 							}
 						}
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("This card is taken"))
+							activePlayer->sendGuideMessage("This card is taken");
 						}
 					}
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("You can't buy card from deck"))
+						activePlayer->sendGuideMessage("You can't buy card from deck");
 					}
 				}
 
@@ -104,27 +108,32 @@ void ACard::onSelected(AActor* Target, FKey ButtonPressed)
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("You can reserve card only from top of deck"))
+							activePlayer->sendGuideMessage("You can reserve card only from top of deck");
 						}
 					}
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("You cannot reserve taken card from player's board"))
+						activePlayer->sendGuideMessage("You cannot reserve taken card from player's board");
 					}
 				}
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Before end of turn take one of avaliable trader"))
+				activePlayer->sendGuideMessage("Before end of turn take one of available trader");
 			}
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("You are drawing or discarding tokens now"))
+			activePlayer->sendGuideMessage("You are drawing or discarding tokens now");
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Pawn is not locally controlled"));
+		activePlayer->sendGuideMessage("Wait for your turn");
 	}
 }
 
@@ -143,6 +152,11 @@ void ACard::setCardInfo(FCardSettings* CardInfo)
 {
 	m_CardSettings = *CardInfo;
 	onCardSettingsChanged();
+}
+
+void ACard::setMaterial(int materialIndex)
+{
+	m_Mesh->SetMaterial(0, m_CardMaterialsArray[materialIndex]);
 }
 
 FCardSettings* ACard::getCardInfo()
@@ -196,7 +210,7 @@ void ACard::onCardSettingsChanged()
 			Widget->NotifyCardDataChanged();
 		}
 	}
-
+	setMaterial(m_CardSettings.CardTier - 1); //Tiers from 1 to 3
 }
 
 void ACard::setAsNotInDeck()

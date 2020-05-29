@@ -50,6 +50,7 @@ void AGameElementsGenerator::LayOutTheCards()
 {
 	FVector newLocation = GetActorLocation() + FVector(0.f, -400.f, 0.f);
 	AInterpolationManager* interpolMaganger = GetWorld()->SpawnActor<AInterpolationManager>(m_InterpolationManagerToSpawn, newLocation, FRotator::ZeroRotator);
+	interpolMaganger->SetActorHiddenInGame(true);
 	for (int32 deckIndex = 0; deckIndex < 3; ++deckIndex)
 	{
 		for (int32 cardIndex = 0; cardIndex < 4; ++cardIndex)	//cardIndex == 0 -> topCardOfDeck;
@@ -238,9 +239,9 @@ void AGameElementsGenerator::generateDecks(float cardHeightDiffrence, float dist
 		{
 			FCardSettings* cardSettings = cardsStructsArray[FMath::RandRange(0, cardsStructsArray.Num() - 1)];
 			FVector NewLocation = GetActorLocation() + FVector(620.f + distanceBetweenDecks * deckIndex, 100.f, cardHeightDiffrence * cardIndex - 30.f);
-			ACard* Card = GetWorld()->SpawnActor<ACard>(m_CardToSpawn, NewLocation, FRotator::ZeroRotator);
-			Card->setCardInfo(cardSettings);
-			cardsArray.m_Cards.Push(Card);
+			ACard* card = GetWorld()->SpawnActor<ACard>(m_CardToSpawn, NewLocation, FRotator::ZeroRotator);
+			card->setCardInfo(cardSettings);
+			cardsArray.m_Cards.Push(card);
 			cardsStructsArray.Remove(cardSettings);		//TODO Remove() removes all instances of item in array !!
 			cardIndex++; 
 		}

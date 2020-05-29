@@ -1,0 +1,21 @@
+Begin Object Class=/Script/Engine.MaterialInstanceConstant Name="MI_LongPileCarpet01"
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   ParameterStateId=A33CBA41417DC8444C152596EE89994F
+   Parent=Material'"/Game/TwinmotionMaterials/Masters/M_Textile_Master.M_Textile_Master"'
+   ScalarParameterValues(0)=(ParameterInfo=(Name="Roughness Max"),ParameterValue=0.500000,ExpressionGUID=5731197B41E959CFABE2D797455E78B9)
+   ScalarParameterValues(1)=(ParameterInfo=(Name="UV Tile U"),ParameterValue=1.000000,ExpressionGUID=473840E24F8CA7538915D688EAFAF862)
+   ScalarParameterValues(2)=(ParameterInfo=(Name="UV Tile V"),ParameterValue=1.000000,ExpressionGUID=D916A5E74F4ECAE01F6F378B7EE5788E)
+   ScalarParameterValues(3)=(ParameterInfo=(Name="Power"),ParameterValue=2.000000,ExpressionGUID=A308BC594C347323907BBBA584FDDBAD)
+   ScalarParameterValues(4)=(ParameterInfo=(Name="Core Darkness"),ParameterValue=0.900000,ExpressionGUID=0DDE3C314C7C96AC75B94D9156176D36)
+   ScalarParameterValues(5)=(ParameterInfo=(Name="Edge Brightness"),ParameterValue=0.800000,ExpressionGUID=6DCD0C234B0BC7135E532E984CB19830)
+   TextureParameterValues(0)=(ParameterInfo=(Name="Color Map"),ParameterValue=Texture2D'"/Game/TwinmotionMaterials/Materials/Fabric/Textures/T_CarpetPattern01_BC.T_CarpetPattern01_BC"',ExpressionGUID=F5DCC3014031B44CDD4E019241CB3A7B)
+   BasePropertyOverrides=(ShadingModel=MSM_Cloth,OpacityMaskClipValue=0.333300)
+   ReferencedTextureGuids(0)=D4BFB82E4AB60F323A31368D302FBE52
+   ReferencedTextureGuids(1)=3949DEC74F2D2C39BE2454AA0EB25D45
+   ReferencedTextureGuids(2)=C719920E440E11721593059D290A1F22
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=5623702540F7C76D13CB28BCA95E03D0
+End Object

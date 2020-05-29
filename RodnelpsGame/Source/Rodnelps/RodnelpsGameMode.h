@@ -29,6 +29,10 @@ public:
 
 	void setNextActivePlayer();
 	void endTurn();
+	void gameSummary();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "GlobalEvents")
+	void UpdateScoreTableBP();
 
 protected:
 
@@ -38,6 +42,10 @@ protected:
 	ARodnelpsPlayerState* m_ActivePlayer;
 
 private:
+	int32 getPlayerCardSum(ARodnelpsPlayerState* player);
+	void UpdateScoreTable();
 
+	bool m_IsLastRound;
 	static int32 s_IdCounter;
+	
 };

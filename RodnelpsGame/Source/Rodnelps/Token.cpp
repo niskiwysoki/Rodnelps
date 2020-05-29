@@ -82,11 +82,13 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 						else
 						{
 							UE_LOG(LogTemp, Warning, TEXT("Reserve card with RMB to get gold token"));
+							activePlayer->sendGuideMessage("Reserve card with RMB to get gold token");
 						}
 					}
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("You have too many tokens. Discard excess tokens"));
+						activePlayer->sendGuideMessage("You have too many tokens. Discard excess tokens");
 					}
 				}
 				else
@@ -102,17 +104,20 @@ void AToken::OnSelected(AActor* Target, FKey ButtonPressed)
 					else
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Token is already taken"));
+						activePlayer->sendGuideMessage("Token is already taken");
 					}
 				}
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Before end of turn take one of avaliable trader"))
+				activePlayer->sendGuideMessage("Before end of turn take one of available trader");
 			}
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Pawn is not locally controlled"));
+			activePlayer->sendGuideMessage("Wait for your turn");
 		}
 	}
 	else
@@ -125,6 +130,16 @@ void AToken::setColor(ETokenColor tokenColor)
 {
 	m_Color = tokenColor;
 	onColorRep();
+}
+
+void AToken::onColorRep()
+{
+	setMaterial(m_TokenMaterialsArray[(int)m_Color]);
+}
+
+void AToken::setMaterial(UMaterial* material)
+{
+	m_Mesh->SetMaterial(0, material);
 }
 
 ETokenColor AToken::getColor()
@@ -161,16 +176,6 @@ void AToken::Broadcast_SetTokenUI_Implementation()
 void AToken::setTokenIndex(int32 index)
 {
 	m_TokenIndex = index;
-}
-
-void AToken::onColorRep()
-{
-	setMaterial(m_TokenMaterialsArray[(int)m_Color]);
-}
-
-void AToken::setMaterial(UMaterial* material)
-{
-	m_Mesh->SetMaterial(0, material);
 }
 
 // Called every frame

@@ -5,11 +5,13 @@
 #include "RodnelpsPlayerState.h"
 #include "RodnelpsGameState.h"
 #include "GameElementsGenerator.h"
+#include "RodnelpsPlayerController.h"
 
 void ARodnelpsGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	s_IdCounter = 0;
+	m_IsLastRound = false;
 }
 
 void ARodnelpsGameMode::RegisterPlayerState(ARodnelpsPlayerState* playerState)
@@ -77,12 +79,26 @@ void ARodnelpsGameMode::setActivePlayer(ARodnelpsPlayerState* player)
 
 void ARodnelpsGameMode::setNextActivePlayer()
 {
-	for (int32 i = 0; i < m_PlayersArray.Num(); i++)
+	int32 indexOfLastPlayer = m_PlayersArray.Num() -1;
+	for (int32 i = 0; i <= indexOfLastPlayer; i++)
 	{
 		if (m_PlayersArray[i] == m_ActivePlayer)
 		{
-			setActivePlayer(m_PlayersArray[(i + 1) % m_PlayersArray.Num()]);
-			break;
+			if (m_ActivePlayer->getVictoryPoints() >= 15)
+				m_IsLastRound = true;
+
+			if (m_IsLastRound && i == indexOfLastPlayer)
+			{
+				gameSummary();
+			}
+			else
+			{
+				setActivePlayer(m_PlayersArray[(i + 1) % m_PlayersArray.Num()]);
+				UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
+				m_ActivePlayer->broadcast_SendGuideMessage("Your Turn");
+				m_ActivePlayer->broadcast_showMessageOnCenterOfScreen("Your turn", 0.7);
+				break;
+			}
 		}
 	}
 }
@@ -92,8 +108,9 @@ void ARodnelpsGameMode::endTurn()
 	if (m_ActivePlayer->isTakingTraders())
 	{
 		m_ActivePlayer->setIsTakingTraders(false);
-		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
-			return;
+		UpdateScoreTable();
+		setNextActivePlayer();
+		return;
 	}
 
 	if (m_ActivePlayer->isTraderPosibbleToGet())
@@ -118,13 +135,60 @@ void ARodnelpsGameMode::endTurn()
 		{
 			m_ActivePlayer->setIsTakingTraders(true);
 			UE_LOG(LogTemp, Warning, TEXT("Take one of traders"))
+			m_ActivePlayer->sendGuideMessage("Take one of traders");
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NewTurn"))
-		setNextActivePlayer();		
+		UpdateScoreTable();
+		setNextActivePlayer();	
 	}
 }
 
+void ARodnelpsGameMode::gameSummary()
+{
+	ARodnelpsPlayerState* bestPlayer = m_PlayersArray[0];
+	int32 indexOfLastPlayer = m_PlayersArray.Num() - 1;
+	for (int32 i = 1; i <= indexOfLastPlayer; i++)
+	{
+		if (bestPlayer->getVictoryPoints() > m_PlayersArray[i]->getVictoryPoints())
+			m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+		else if (bestPlayer->getVictoryPoints() == m_PlayersArray[i]->getVictoryPoints())
+		{
+			if (getPlayerCardSum(bestPlayer) < getPlayerCardSum(m_PlayersArray[i]))
+			{
+				m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+			}
+			else
+			{
+				bestPlayer->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+				bestPlayer = m_PlayersArray[i];
+			}
+		}
+		else
+		{
+			bestPlayer->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+			bestPlayer = m_PlayersArray[i];
+		}
+	}
+	bestPlayer->broadcast_showMessageOnCenterOfScreen("Congratulations, you didn't lose", 5.f);
+}
+
+int32 ARodnelpsGameMode::getPlayerCardSum(ARodnelpsPlayerState* player)
+{
+	int32 cardNum = 0;
+	for (const auto& cardStack : player->getCardStacksArray())
+		cardNum += cardStack.m_Cards.Num();
+	return cardNum;
+}
+
 int32 ARodnelpsGameMode::s_IdCounter = 0;
+
+void ARodnelpsGameMode::UpdateScoreTable()
+{
+	if(ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(m_ActivePlayer->GetOwner()))
+	{
+		controller->setPlayerScore(m_ActivePlayer);
+	}
+	UpdateScoreTableBP();
+}

@@ -74,27 +74,43 @@ public:
 	void setPlayerId(int32 id);
 	int32 getPlayerId() const { return m_PlayerId; }
 
-private:
+	TArray<FTokenArray> getTokenStacksArray() const { return m_TokenStacksArray; }
+	TArray<FCardArray> getCardStacksArray() const { return m_CardStacksArray; }
+	int32  getVictoryPoints() const { return m_VictoryPoints; }
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "GlobalEvents")
+	void sendGuideMessage(const FString &message);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void broadcast_SendGuideMessage(const FString &message);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "GlobalEvents")
+	void showMessageOnCenterOfScreen(const FString& message, float messageTime);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void broadcast_showMessageOnCenterOfScreen(const FString& message, float messageTime);
+
+private:
 	UFUNCTION(Server, WithValidation, Reliable)
 	void endTurn();
-
 
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int32 m_PlayerId;
 
 private:
-	UPROPERTY(Replicated)
-	TArray<FTokenArray> m_TokenStacksArray;
-
 	ETokenColor m_FirstTokenTakenColor;
 	ETokenColor m_SecondTokenTakenColor;
 	bool m_AreTokensDrawn;
 	bool m_isTakingTokens;
 
+	int32 m_VictoryPoints;
+
 	UPROPERTY(Replicated)
 	bool m_isTakingTrader;
+
+	UPROPERTY(Replicated)
+	TArray<FTokenArray> m_TokenStacksArray;
 
 	UPROPERTY(Replicated)
 	TArray <FCardArray> m_CardStacksArray;

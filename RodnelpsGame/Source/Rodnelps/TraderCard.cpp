@@ -66,21 +66,25 @@ void ATraderCard::OnSelected(AActor* Target, FKey ButtonPressed)
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("You can only choose trader if is multiple choice"))
+					activePlayer->sendGuideMessage("You can only choose trader if is multiple choice");
 				}
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Trader is already taken"))
+				activePlayer->sendGuideMessage("Trader is already taken");
 			}
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("You don't meet requirements"))
+			activePlayer->sendGuideMessage("You don't meet requirements");
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Pawn is not locally controlled"))
+		activePlayer->sendGuideMessage("Wait for your turn");
 	}
 }
 
