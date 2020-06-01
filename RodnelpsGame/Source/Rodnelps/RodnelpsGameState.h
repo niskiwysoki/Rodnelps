@@ -32,6 +32,9 @@ public:
 
 	void Server_setActivePlayer(ARodnelpsPlayerState* player);
 
+	int32 getNumberOfPlayers() const { return m_NumberOfPlayers; }
+	void setNumberOfPlayers(int32 val) { m_NumberOfPlayers = val; }
+
 private:
 
 	UPROPERTY(replicated)
@@ -39,4 +42,6 @@ private:
 
 	AInterpolationManager* m_InterpolManager;
 	AGameElementsGenerator* m_GameElementsGenerator;
+
+	int32 m_NumberOfPlayers;
 };

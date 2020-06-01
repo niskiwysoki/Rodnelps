@@ -401,6 +401,7 @@ void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocati
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, actor->GetActorLocation() + FVector(0.f, 0.f, 500.f), 0.f);
 
 	float roll = 0.f;
+	float yaw = 0.f;
 	if (Cast<ACard>(actor))
 	{
 		ACard* card = Cast<ACard>(actor);
@@ -409,8 +410,12 @@ void ARodnelpsPlayerState::moveActorOnBoard(AActor* actor, FVector desiredLocati
 			gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, 0.f, 180.f), 0.f);
 			roll += 180.f;
 		}
+		if (m_ReservedCardArray.Contains(card))
+		{
+			yaw = card->GetActorRotation().Yaw;
+		}
 	}
-	gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, -90.f*(m_PlayerId), roll), 0.f);
+	gamestate->GetInterpolationManager()->setDesiredRotation(actor, actor->GetActorRotation() + FRotator(0.f, -90.f*(m_PlayerId) - yaw, roll), 0.f);
 	gamestate->GetInterpolationManager()->setDesiredLocation(actor, desiredLocation, 0.f);
 }
 

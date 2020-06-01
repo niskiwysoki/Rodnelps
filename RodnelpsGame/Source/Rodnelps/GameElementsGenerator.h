@@ -28,15 +28,15 @@ public:
 
 	const TArray<ATraderCard*>& getTraderArray();
 
-	void generateGamePieces();
+	void generateGamePieces(int32 numberOfPlayers);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void LayOutTheCards();
-	void generateTokens();
-	void generateTraders(float distanceBetweenTraders);
+	void generateTokens(int32 numberOfPlayers);
+	void generateTraders(int32 numberOfPlayers, float distanceBetweenTraders);
 	void generateDecks(float cardHeightDiffrence, float distanceBetweenDecks);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Interface")

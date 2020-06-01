@@ -14,13 +14,17 @@ APlayerPawn::APlayerPawn()
 	PrimaryActorTick.bCanEverTick = true;
 
 	VisibleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisibleComponent"));
-	VisibleComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	VisibleComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	VisibleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECR_Block);
 	RootComponent = VisibleComponent;
 	UCameraComponent* Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
 	Camera->SetupAttachment(RootComponent);
 	Camera->SetRelativeRotation(FRotator(-75.0f, 0.0f, 0.0f));
+	Camera->PostProcessSettings.bOverride_MotionBlurAmount = true;
+	Camera->PostProcessSettings.MotionBlurAmount = 0.f;
+
 	m_cameraMovementSpeed = 800;
 	m_playerHeight = 0;
 	

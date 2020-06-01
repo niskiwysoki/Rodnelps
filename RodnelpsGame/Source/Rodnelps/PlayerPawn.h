@@ -11,9 +11,6 @@ class RODNELPS_API APlayerPawn : public APawn
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* VisibleComponent;
-
 public:
 	// Sets default values for this pawn's properties
 	APlayerPawn();
@@ -42,6 +39,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	int m_cameraMovementSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* VisibleComponent;
+
 	float m_playerHeight;
 
 };

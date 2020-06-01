@@ -16,6 +16,8 @@ class RODNELPS_API ARodnelpsGameMode : public AGameMode
 
 public:
 
+	//ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer);
+
 	virtual void BeginPlay() override;
 
 	void RegisterPlayerState(ARodnelpsPlayerState* playerState);
@@ -24,7 +26,11 @@ public:
 	APlayerBoardSpace* GetPlayerBoard(int32 id);
 
 	virtual void HandleMatchHasStarted() override;
-	
+	virtual void HandleMatchHasEnded() override;
+	//virtual void HandleMatchIsWaitingToStart() override;
+
+	virtual void Tick(float DeltaTime) override;
+
 	void setActivePlayer(ARodnelpsPlayerState* player);
 
 	void setNextActivePlayer();
@@ -33,6 +39,8 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "GlobalEvents")
 	void UpdateScoreTableBP();
+
+	int32 getPlayersNumber() const { return m_PlayerNumber; }
 
 protected:
 
@@ -44,8 +52,12 @@ protected:
 private:
 	int32 getPlayerCardSum(ARodnelpsPlayerState* player);
 	void UpdateScoreTable();
+	void wait(float time);
 
 	bool m_IsLastRound;
 	static int32 s_IdCounter;
+	float m_Time;
+	
+	int32 m_PlayerNumber;
 	
 };

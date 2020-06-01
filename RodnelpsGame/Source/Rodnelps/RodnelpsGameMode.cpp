@@ -6,12 +6,27 @@
 #include "RodnelpsGameState.h"
 #include "GameElementsGenerator.h"
 #include "RodnelpsPlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/DefaultValueHelper.h"
+
+//ARodnelpsGameMode::ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+//{
+//	
+//	
+//}
 
 void ARodnelpsGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	s_IdCounter = 0;
+	m_Time = 0;
 	m_IsLastRound = false;
+	FDefaultValueHelper::ParseInt(UGameplayStatics::ParseOption(OptionsString, "NumberOfPlayers"), m_PlayerNumber);
+	if (ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>())
+	{
+		gameState->setNumberOfPlayers(m_PlayerNumber);
+	}
+	
 }
 
 void ARodnelpsGameMode::RegisterPlayerState(ARodnelpsPlayerState* playerState)
@@ -62,7 +77,41 @@ void ARodnelpsGameMode::HandleMatchHasStarted()
 		setActivePlayer(m_PlayersArray[0]);
 	else
 		UE_LOG(LogTemp, Error, TEXT("No Players!"));
+	
 }
+
+void ARodnelpsGameMode::HandleMatchHasEnded()
+{
+	Super::HandleMatchHasEnded();
+	for (auto player : m_PlayersArray)
+	{
+		if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
+		{
+			wait(5.f);
+			playerController->ConsoleCommand("servertravel/Game/Maps/Test/Lobby");
+		}
+	}
+}
+
+void ARodnelpsGameMode::wait(float time)
+{
+	PrimaryActorTick.bCanEverTick = true;
+	m_Time = time;
+	while (m_Time > 0)
+	{
+	}
+}
+
+void ARodnelpsGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	m_Time -= DeltaTime;
+	if (m_Time<0)
+	{
+	}
+	PrimaryActorTick.bCanEverTick = false;
+}
+
 
 void ARodnelpsGameMode::setActivePlayer(ARodnelpsPlayerState* player)
 {
@@ -172,6 +221,7 @@ void ARodnelpsGameMode::gameSummary()
 		}
 	}
 	bestPlayer->broadcast_showMessageOnCenterOfScreen("Congratulations, you didn't lose", 5.f);
+	EndMatch();
 }
 
 int32 ARodnelpsGameMode::getPlayerCardSum(ARodnelpsPlayerState* player)

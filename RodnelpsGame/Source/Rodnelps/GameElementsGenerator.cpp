@@ -43,7 +43,7 @@ void AGameElementsGenerator::BeginPlay()
 	gameState->setGameElementGenerator(this);
 
 	if(HasAuthority())
-		generateGamePieces();
+		generateGamePieces(gameState->getNumberOfPlayers());
 }
 
 void AGameElementsGenerator::LayOutTheCards()
@@ -51,6 +51,9 @@ void AGameElementsGenerator::LayOutTheCards()
 	FVector newLocation = GetActorLocation() + FVector(0.f, -400.f, 0.f);
 	AInterpolationManager* interpolMaganger = GetWorld()->SpawnActor<AInterpolationManager>(m_InterpolationManagerToSpawn, newLocation, FRotator::ZeroRotator);
 	interpolMaganger->SetActorHiddenInGame(true);
+	//starting time for players to connect
+	interpolMaganger->setDesiredLocation(this, GetActorLocation(), 10.f);
+
 	for (int32 deckIndex = 0; deckIndex < 3; ++deckIndex)
 	{
 		for (int32 cardIndex = 0; cardIndex < 4; ++cardIndex)	//cardIndex == 0 -> topCardOfDeck;
@@ -71,10 +74,21 @@ void AGameElementsGenerator::LayOutTheCards()
 	}
 }
 
-void AGameElementsGenerator::generateTokens()
+void AGameElementsGenerator::generateTokens(int32 numberOfPlayers)
 {
+
 	int32 stacksNum = 5;		// gold stack is different
 	int32 tokensInStack = 7;
+
+	switch (numberOfPlayers)
+	{
+	case 1: tokensInStack = 4;  break;
+	case 2: tokensInStack = 4;  break;
+	case 3: tokensInStack = 5;  break;
+	case 4: tokensInStack = 7;  break;
+	default:  tokensInStack = 4; break;
+	}
+
 	float distanceBetweenStacks = 400.f;
 	float heightBetweenTokens = 15.f;
 	for (int32 i = 0; i < stacksNum; ++i)
@@ -152,15 +166,15 @@ const TArray<ATraderCard*>& AGameElementsGenerator::getTraderArray()
 	return m_TradersArray;
 }
 
-void AGameElementsGenerator::generateGamePieces()
+void AGameElementsGenerator::generateGamePieces(int32 numberOfPlayers)
 {
 	check(HasAuthority());
 
 	if (HasAuthority())
 	{
 		generateDecks(6.f, 620.f);
-		generateTraders(500.f);
-		generateTokens();
+		generateTraders(numberOfPlayers, 500.f);
+		generateTokens(numberOfPlayers);
 		LayOutTheCards();
 	}
 }
@@ -194,14 +208,14 @@ void AGameElementsGenerator::placeNewCard(ACard* card)
 	}
 }
 
-void AGameElementsGenerator::generateTraders(float distanceBetweenTraders)
+void AGameElementsGenerator::generateTraders(int32 numberOfPlayers, float distanceBetweenTraders)
 {
 	int32 TraderTableSize = m_TraderCards->GetRowMap().Num();
 	std::set<int32> indexSet;
 	for (int32 i = 0; i < TraderTableSize; ++i)
 		indexSet.insert(i);
 	int32 loopLimit = 0;
-	while (indexSet.size() > 5 && loopLimit < 10000) {
+	while (indexSet.size() > numberOfPlayers + 1 && loopLimit < 10000) {
 		indexSet.erase(FMath::RandRange(0, TraderTableSize - 1));
 		loopLimit++;
 	}
