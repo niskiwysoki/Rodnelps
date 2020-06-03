@@ -6,6 +6,9 @@
 #include "GameFramework/Pawn.h"
 #include "PlayerPawn.generated.h"
 
+class UBoxComponent;
+class UCameraComponent;
+
 UCLASS()
 class RODNELPS_API APlayerPawn : public APawn
 {
@@ -40,8 +43,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	int m_cameraMovementSpeed;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* VisibleComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Collision Box", meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* CollisionBox;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* Camera;
 
 	float m_playerHeight;
 

@@ -4,8 +4,8 @@
 #include "PlayerPawn.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
-#include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -13,11 +13,9 @@ APlayerPawn::APlayerPawn()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	VisibleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisibleComponent"));
-	VisibleComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	VisibleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECR_Block);
-	RootComponent = VisibleComponent;
-	UCameraComponent* Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("VisibleComponent"));
+	RootComponent = CollisionBox;
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
 	Camera->SetupAttachment(RootComponent);
@@ -46,7 +44,7 @@ void APlayerPawn::Tick(float DeltaTime)
 	if (!CurrentVelocity.IsZero())
 	{
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime);
-		SetActorLocation(NewLocation);
+		SetActorLocation(NewLocation, true);
 		CurrentVelocity = FVector::ZeroVector;
 	}
 
