@@ -18,15 +18,13 @@
 void ARodnelpsGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	s_IdCounter = 0;
 	m_Time = 0;
 	m_IsLastRound = false;
 	FDefaultValueHelper::ParseInt(UGameplayStatics::ParseOption(OptionsString, "NumberOfPlayers"), m_PlayerNumber);
 	if (ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>())
 	{
 		gameState->setNumberOfPlayers(m_PlayerNumber);
-	}
-	
+	}	
 }
 
 void ARodnelpsGameMode::RegisterPlayerState(ARodnelpsPlayerState* playerState)
@@ -222,6 +220,13 @@ void ARodnelpsGameMode::gameSummary()
 	}
 	bestPlayer->broadcast_showMessageOnCenterOfScreen("Congratulations, you didn't lose", 5.f);
 	EndMatch();
+}
+
+void ARodnelpsGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	s_IdCounter = 0;
 }
 
 int32 ARodnelpsGameMode::getPlayerCardSum(ARodnelpsPlayerState* player)

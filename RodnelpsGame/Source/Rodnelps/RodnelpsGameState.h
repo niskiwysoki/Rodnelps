@@ -30,10 +30,12 @@ public:
 	AGameElementsGenerator* getGameElementGenerator();
 	void setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator);
 
+	void tryGeneratePieces();
+
 	void Server_setActivePlayer(ARodnelpsPlayerState* player);
 
 	int32 getNumberOfPlayers() const { return m_NumberOfPlayers; }
-	void setNumberOfPlayers(int32 val) { m_NumberOfPlayers = val; }
+	void setNumberOfPlayers(int32 val);
 
 private:
 

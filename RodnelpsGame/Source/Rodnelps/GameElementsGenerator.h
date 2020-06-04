@@ -59,6 +59,8 @@ public:
 	void placeNewCard(ACard* card);
 
 private:
+	bool m_bPiecesGenerated;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "CardTables", meta = (AllowPrivateAccess = "true"))
 	TArray<UDataTable*> m_CardTablesArray;
 

@@ -20,6 +20,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	// WE override this only because it's called before any other BeginPlay
+	virtual void PostInitializeComponents() override;
+
 	void RegisterPlayerState(ARodnelpsPlayerState* playerState);
 
 	void registerPlayerBoard(APlayerBoardSpace* board);

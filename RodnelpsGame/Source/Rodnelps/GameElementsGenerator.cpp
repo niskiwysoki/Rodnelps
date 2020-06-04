@@ -24,6 +24,7 @@ AGameElementsGenerator::AGameElementsGenerator()
 	PrimaryActorTick.bCanEverTick = true;
 
 	bReplicates = true;
+	m_bPiecesGenerated = false;
 }
 
 void AGameElementsGenerator::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -42,8 +43,8 @@ void AGameElementsGenerator::BeginPlay()
 	ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gameState->setGameElementGenerator(this);
 
-	if(HasAuthority())
-		generateGamePieces(gameState->getNumberOfPlayers());
+	//if(HasAuthority())
+	//	generateGamePieces(gameState->getNumberOfPlayers());
 }
 
 void AGameElementsGenerator::LayOutTheCards()
@@ -170,8 +171,12 @@ void AGameElementsGenerator::generateGamePieces(int32 numberOfPlayers)
 {
 	check(HasAuthority());
 
+	if (m_bPiecesGenerated)
+		return;
+
 	if (HasAuthority())
 	{
+		m_bPiecesGenerated = true;
 		generateDecks(6.f, 620.f);
 		generateTraders(numberOfPlayers, 500.f);
 		generateTokens(numberOfPlayers);

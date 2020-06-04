@@ -11,7 +11,7 @@
 ARodnelpsGameState::ARodnelpsGameState()
 {
 	m_ActivePlayer = nullptr;
-	m_NumberOfPlayers = 1;
+	m_NumberOfPlayers = -1;
 }
 
 ARodnelpsPlayerState* ARodnelpsGameState::getActivePlayer()
@@ -44,6 +44,22 @@ AGameElementsGenerator* ARodnelpsGameState::getGameElementGenerator()
 void ARodnelpsGameState::setGameElementGenerator(AGameElementsGenerator* gameElementsGenerator)
 {
 	m_GameElementsGenerator = gameElementsGenerator;
+
+	tryGeneratePieces();
+}
+
+void ARodnelpsGameState::tryGeneratePieces()
+{
+	if (HasAuthority())
+	{
+		if (m_NumberOfPlayers > 0)
+		{
+			if (m_GameElementsGenerator)
+			{
+				m_GameElementsGenerator->generateGamePieces(m_NumberOfPlayers);
+			}
+		}
+	}
 }
 
 void ARodnelpsGameState::Server_setActivePlayer(ARodnelpsPlayerState* player)
@@ -54,4 +70,11 @@ void ARodnelpsGameState::Server_setActivePlayer(ARodnelpsPlayerState* player)
 	{
 		m_ActivePlayer = player;
 	}
+}
+
+void ARodnelpsGameState::setNumberOfPlayers(int32 val)
+{
+	m_NumberOfPlayers = val;
+
+	tryGeneratePieces();
 }
