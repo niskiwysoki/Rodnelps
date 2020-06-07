@@ -129,6 +129,14 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 		}
 	}
 	addToken(token);
+	if (!isPossibleToGetToken())
+	{
+		m_AreTokensDrawn = true;
+		if (getTokenNum() <= 10)
+		{
+			bResetAndEndTurn = true;
+		}
+	}
 	if (bResetAndEndTurn)
 	{
 		resetTokenStatusAndEndTurn(gamestate);
@@ -142,7 +150,6 @@ bool ARodnelpsPlayerState::addToken_Validate(AToken* token)
 
 void ARodnelpsPlayerState::addToken_Implementation(AToken* token)
 {
-	//broadcast_AddToken(token);
 	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
 	int32 tokenColorIdnex = int32(token->getColor());
 
@@ -186,8 +193,8 @@ void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamest
 {
 		m_FirstTokenTakenColor = ETokenColor::MAX_COLOURS;
 		m_SecondTokenTakenColor = ETokenColor::MAX_COLOURS;
-		m_AreTokensDrawn = 0;
-		m_isTakingTokens = 0;
+		m_AreTokensDrawn = false;
+		m_isTakingTokens = false;
 		endTurn();
 }
 
@@ -492,5 +499,46 @@ void ARodnelpsPlayerState::payTokenStackForCard(int32 tokensNum, int32 stackColo
 		}
 		tokensNum--;
 	}
+}
+
+bool ARodnelpsPlayerState::isPossibleToGetToken()
+{
+	ARodnelpsGameState* gamestate = GetWorld()->GetGameState<ARodnelpsGameState>();
+	AGameElementsGenerator* generator = gamestate->getGameElementGenerator();
+
+	if (m_SecondTokenTakenColor == ETokenColor::MAX_COLOURS)
+	{
+		if (generator->getTokenStacksArray()[int32(m_FirstTokenTakenColor)].m_Tokens.Num() >= 3)
+		{
+			return true;
+		}
+		else
+		{
+			for (int32 i = 0; i < generator->getTokenStacksArray().Num(); i++)
+			{
+				if (generator->getTokenStacksArray()[i].m_Tokens.Num() >= 1)
+				{
+					if (i != int32(m_FirstTokenTakenColor) && i != int32(ETokenColor::GOLD))
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int32 i = 0; i< generator->getTokenStacksArray().Num(); i++)
+		{
+			if (generator->getTokenStacksArray()[i].m_Tokens.Num() >= 1)
+			{
+				if (i != int32(m_FirstTokenTakenColor) && i != int32(m_SecondTokenTakenColor) && i != int32(ETokenColor::GOLD))
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 

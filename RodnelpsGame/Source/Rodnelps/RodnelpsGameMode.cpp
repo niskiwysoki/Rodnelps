@@ -9,11 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DefaultValueHelper.h"
 
-//ARodnelpsGameMode::ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
-//{
-//	
-//	
-//}
 
 void ARodnelpsGameMode::BeginPlay()
 {

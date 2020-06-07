@@ -43,8 +43,6 @@ void AGameElementsGenerator::BeginPlay()
 	ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>();
 	gameState->setGameElementGenerator(this);
 
-	//if(HasAuthority())
-	//	generateGamePieces(gameState->getNumberOfPlayers());
 }
 
 void AGameElementsGenerator::LayOutTheCards()
@@ -53,7 +51,7 @@ void AGameElementsGenerator::LayOutTheCards()
 	AInterpolationManager* interpolMaganger = GetWorld()->SpawnActor<AInterpolationManager>(m_InterpolationManagerToSpawn, newLocation, FRotator::ZeroRotator);
 	interpolMaganger->SetActorHiddenInGame(true);
 	//starting time for players to connect
-	interpolMaganger->setDesiredLocation(this, GetActorLocation(), 10.f);
+	interpolMaganger->setDesiredLocation(this, GetActorLocation(), 7.f);
 
 	for (int32 deckIndex = 0; deckIndex < 3; ++deckIndex)
 	{

@@ -53,6 +53,8 @@ public:
 
 	bool isTraderPosibbleToGet();
 
+	bool isPossibleToGetToken();
+
 	UFUNCTION(Server, WithValidation, Reliable)
 	void transferTrader(ATraderCard* trader);
 
@@ -94,6 +96,8 @@ private:
 	UFUNCTION(Server, WithValidation, Reliable)
 	void endTurn();
 
+	void payTokenStackForCard(int32 tokensNum, int32 colorIndex);
+
 protected:
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	int32 m_PlayerId;
@@ -120,8 +124,6 @@ private:
 
 	UPROPERTY(Replicated)
 	TArray <ATraderCard*> m_TraderCardArray;
-
-	void payTokenStackForCard(int32 tokensNum, int32 colorIndex);
 
 	UPROPERTY(Replicated)
 	APlayerBoardSpace* m_PlayerBoard;

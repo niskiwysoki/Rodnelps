@@ -30,6 +30,18 @@ public:
 
 	void generateGamePieces(int32 numberOfPlayers);
 
+	virtual void Tick(float DeltaTime) override;
+
+	void addToken(AToken* token);
+	void removeToken(AToken* token);
+	int32 getStackSize(AToken* token);
+	TArray<AToken*> getGoldTokenStack();
+	TArray<AToken*> getTokenStack(AToken* token);
+	void removeTrader(ATraderCard* trader);
+
+	void placeNewCard(ACard* card);
+	TArray<FTokenArray> getTokenStacksArray() const { return m_TokenStacsArray; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -45,18 +57,6 @@ protected:
 
 	virtual void setTokenIndex_Implementation(AToken* token) override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	void addToken(AToken* token);
-	void removeToken(AToken* token);
-	int32 getStackSize(AToken* token);
-	TArray<AToken*> getGoldTokenStack();
-	TArray<AToken*> getTokenStack(AToken* token);
-	void removeTrader(ATraderCard* trader);
-
-	void placeNewCard(ACard* card);
 
 private:
 	bool m_bPiecesGenerated;
@@ -86,4 +86,5 @@ private:
 	TArray<FTokenArray> m_TokenStacsArray;
 
 	TArray<ATraderCard*> m_TradersArray;
+
 };
