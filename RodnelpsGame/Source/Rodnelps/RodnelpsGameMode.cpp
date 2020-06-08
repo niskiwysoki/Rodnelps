@@ -15,6 +15,7 @@ void ARodnelpsGameMode::BeginPlay()
 	Super::BeginPlay();
 	m_Time = 0;
 	m_IsLastRound = false;
+	PrimaryActorTick.bCanEverTick = true;
 	FDefaultValueHelper::ParseInt(UGameplayStatics::ParseOption(OptionsString, "NumberOfPlayers"), m_PlayerNumber);
 	if (ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>())
 	{
@@ -80,29 +81,9 @@ void ARodnelpsGameMode::HandleMatchHasEnded()
 	{
 		if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
 		{
-			wait(5.f);
 			playerController->ConsoleCommand("servertravel/Game/Maps/Test/Lobby");
 		}
 	}
-}
-
-void ARodnelpsGameMode::wait(float time)
-{
-	PrimaryActorTick.bCanEverTick = true;
-	m_Time = time;
-	while (m_Time > 0)
-	{
-	}
-}
-
-void ARodnelpsGameMode::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	m_Time -= DeltaTime;
-	if (m_Time<0)
-	{
-	}
-	PrimaryActorTick.bCanEverTick = false;
 }
 
 
@@ -194,33 +175,34 @@ void ARodnelpsGameMode::gameSummary()
 	for (int32 i = 1; i <= indexOfLastPlayer; i++)
 	{
 		if (bestPlayer->getVictoryPoints() > m_PlayersArray[i]->getVictoryPoints())
-			m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+			m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("You lost", 5.f);
 		else if (bestPlayer->getVictoryPoints() == m_PlayersArray[i]->getVictoryPoints())
 		{
 			if (getPlayerCardSum(bestPlayer) < getPlayerCardSum(m_PlayersArray[i]))
 			{
-				m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+				m_PlayersArray[i]->broadcast_showMessageOnCenterOfScreen("You lost", 5.f);
 			}
 			else
 			{
-				bestPlayer->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+				bestPlayer->broadcast_showMessageOnCenterOfScreen("You lost", 5.f);
 				bestPlayer = m_PlayersArray[i];
 			}
 		}
 		else
 		{
-			bestPlayer->broadcast_showMessageOnCenterOfScreen("Poor you nothing but vitriol to contribute", 5.f);
+			bestPlayer->broadcast_showMessageOnCenterOfScreen("You lost", 5.f);
 			bestPlayer = m_PlayersArray[i];
 		}
 	}
 	bestPlayer->broadcast_showMessageOnCenterOfScreen("Congratulations, you didn't lose", 5.f);
+	
 	EndMatch();
 }
 
 void ARodnelpsGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
+	
 	s_IdCounter = 0;
 }
 

@@ -16,8 +16,6 @@ class RODNELPS_API ARodnelpsGameMode : public AGameMode
 
 public:
 
-	//ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer);
-
 	virtual void BeginPlay() override;
 
 	// WE override this only because it's called before any other BeginPlay
@@ -30,9 +28,6 @@ public:
 
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
-	//virtual void HandleMatchIsWaitingToStart() override;
-
-	virtual void Tick(float DeltaTime) override;
 
 	void setActivePlayer(ARodnelpsPlayerState* player);
 
@@ -55,7 +50,6 @@ protected:
 private:
 	int32 getPlayerCardSum(ARodnelpsPlayerState* player);
 	void UpdateScoreTable();
-	void wait(float time);
 
 	bool m_IsLastRound;
 	static int32 s_IdCounter;

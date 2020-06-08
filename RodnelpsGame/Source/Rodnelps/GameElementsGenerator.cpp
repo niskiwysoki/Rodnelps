@@ -175,7 +175,7 @@ void AGameElementsGenerator::generateGamePieces(int32 numberOfPlayers)
 	if (HasAuthority())
 	{
 		m_bPiecesGenerated = true;
-		generateDecks(6.f, 620.f);
+		generateDecks(8.f, 620.f);
 		generateTraders(numberOfPlayers, 500.f);
 		generateTokens(numberOfPlayers);
 		LayOutTheCards();
