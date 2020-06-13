@@ -11,9 +11,14 @@
 #include "RodnelpsGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "RodnelpsPlayerController.h"
+#include "Kismet/KismetStringLibrary.h"
+#include "Engine/Engine.h"
 
 ARodnelpsPlayerState::ARodnelpsPlayerState()
 {
+	//TODO delete later
+	PrimaryActorTick.bCanEverTick = true;	
+
 	m_FirstTokenTakenColor = ETokenColor::MAX_COLOURS;
 	m_SecondTokenTakenColor = ETokenColor::MAX_COLOURS;
 	m_AreTokensDrawn = false;
@@ -50,6 +55,12 @@ void ARodnelpsPlayerState::BeginPlay()
 	}
 }
 
+void ARodnelpsPlayerState::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	GEngine->AddOnScreenDebugMessage(m_PlayerId,0,FColor::Red,UKismetStringLibrary::Conv_IntToString(getTokenNum()));
+}
+
 void ARodnelpsPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -61,6 +72,8 @@ void ARodnelpsPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 	DOREPLIFETIME(ARodnelpsPlayerState, m_ReservedCardArray);
 	DOREPLIFETIME(ARodnelpsPlayerState, m_TraderCardArray);
 	DOREPLIFETIME(ARodnelpsPlayerState, m_isTakingTrader);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_AreTokensDrawn);
+	DOREPLIFETIME(ARodnelpsPlayerState, m_isTakingTokens);
 }
 
 void ARodnelpsPlayerState::setPlayerBoard(APlayerBoardSpace* playerBoard)
@@ -94,7 +107,7 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 	if (m_FirstTokenTakenColor == ETokenColor::MAX_COLOURS)
 	{
 		m_FirstTokenTakenColor = token->getColor();
-		m_isTakingTokens = 1;
+		m_isTakingTokens = true;
 	}
 	else
 	{
@@ -116,6 +129,11 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 					{
 						bResetAndEndTurn = true;
 					}
+					else
+					{
+						sendGuideMessage("Discard excess tokens");
+						showMessageOnCenterOfScreen("Discard excess tokens", 0.5f);
+					}
 				}
 			}
 		}
@@ -126,21 +144,39 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 			{
 				bResetAndEndTurn = true;
 			}
+			else
+			{
+				sendGuideMessage("Discard excess tokens");
+				showMessageOnCenterOfScreen("Discard excess tokens", 0.5f);
+			}
 		}
 	}
 	addToken(token);
+	if(!HasAuthority())
+		m_TokenStacksArray[int32(token->getColor())].m_Tokens.Push(token);		// predicted on client
+	
 	if (!isPossibleToGetToken())
 	{
 		m_AreTokensDrawn = true;
 		if (getTokenNum() <= 10)
 		{
+			sendGuideMessage(FString::FromInt(getTokenNum()) + TEXT(" : No tokens left"));
 			bResetAndEndTurn = true;
 		}
+		else
+		{
+			sendGuideMessage("Discard excess tokens");
+			showMessageOnCenterOfScreen("Discard excess tokens", 0.5f);
+		}
 	}
+
+	generateInfoOnchat();
+
 	if (bResetAndEndTurn)
 	{
 		resetTokenStatusAndEndTurn(gamestate);
 	}
+
 }
 
 bool ARodnelpsPlayerState::addToken_Validate(AToken* token)
@@ -187,6 +223,7 @@ void ARodnelpsPlayerState::removeToken(AToken* token)
 
 	if(!HasAuthority())
 		Server_removeToken(token);
+	generateInfoOnchat();
 }
 
 void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate)
@@ -365,6 +402,7 @@ void ARodnelpsPlayerState::reserveCard_Implementation(ACard* card)
 	}
 	if (reservedCardIndex == 3)
 	{
+		broadcast_SendGuideMessage("You reserved max number of cards");
 		return;
 	}
 		
@@ -379,14 +417,17 @@ void ARodnelpsPlayerState::reserveCard_Implementation(ACard* card)
 	{
 		AToken* goldToken = gamestate->getGameElementGenerator()->getGoldTokenStack().Last();
 		addToken(goldToken);
-		m_isTakingTokens = 1;
+		m_isTakingTokens = true;
 	}
 
 	gamestate->getGameElementGenerator()->placeNewCard(card);
+	broadcast_generateInfoOnchat();
 
 	if (getTokenNum() > 10)
 	{
 		m_AreTokensDrawn = true;
+		broadcast_SendGuideMessage("Discard excess tokens");
+		broadcast_showMessageOnCenterOfScreen("Discard excess tokens", 0.5f);
 	}
 	else
 	{
@@ -446,6 +487,27 @@ void ARodnelpsPlayerState::setPlayerId(int32 id)
 	}
 }
 
+void ARodnelpsPlayerState::broadcast_generateInfoOnchat_Implementation()
+{
+	if (ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(GetOwner()))
+	{
+		if (controller->IsLocalController())
+		{
+			generateInfoOnchat();
+		}
+	}
+}
+
+void ARodnelpsPlayerState::generateInfoOnchat()
+{
+	sendGuideMessage("*******");
+	sendGuideMessage("Id: " + UKismetStringLibrary::Conv_IntToString(m_PlayerId));
+	sendGuideMessage("TokeNum: " + UKismetStringLibrary::Conv_IntToString(getTokenNum()));
+	sendGuideMessage("IsTakingTokens: " + UKismetStringLibrary::Conv_BoolToString(m_isTakingTokens));
+	sendGuideMessage("AreTokenDrown: " + UKismetStringLibrary::Conv_BoolToString(m_AreTokensDrawn));
+	sendGuideMessage("*******");
+}
+
 void ARodnelpsPlayerState::broadcast_SendGuideMessage_Implementation(const FString &message)
 {
 	if (ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(GetOwner()))
@@ -472,6 +534,8 @@ void ARodnelpsPlayerState::endTurn_Implementation()
 {
 	if (ARodnelpsGameMode* gameMode = GetWorld()->GetAuthGameMode<ARodnelpsGameMode>())
 	{
+		m_AreTokensDrawn = false;	//synch with server
+		m_isTakingTokens = false;	//synch with server
 		gameMode->endTurn();
 	}
 }
