@@ -40,6 +40,9 @@ public:
 
 	int32 getPlayersNumber() const { return m_PlayerNumber; }
 
+	UFUNCTION(Exec)
+	void addPointsToHost(int32 points);
+
 protected:
 
 	TArray<APlayerBoardSpace*> m_BoardArray;

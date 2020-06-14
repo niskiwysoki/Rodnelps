@@ -79,6 +79,7 @@ public:
 	TArray<FTokenArray> getTokenStacksArray() const { return m_TokenStacksArray; }
 	TArray<FCardArray> getCardStacksArray() const { return m_CardStacksArray; }
 	int32  getVictoryPoints() const { return m_VictoryPoints; }
+	void addVictoryPoints(int32 points);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GlobalEvents")
 	void sendGuideMessage(const FString &message);

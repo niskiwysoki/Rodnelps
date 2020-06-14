@@ -475,6 +475,11 @@ void ARodnelpsPlayerState::setPlayerId(int32 id)
 	}
 }
 
+void ARodnelpsPlayerState::addVictoryPoints(int32 points)
+{
+	m_VictoryPoints += points;
+}
+
 void ARodnelpsPlayerState::broadcast_generateInfoOnchat_Implementation()
 {
 	if (ARodnelpsPlayerController* controller = Cast<ARodnelpsPlayerController>(GetOwner()))

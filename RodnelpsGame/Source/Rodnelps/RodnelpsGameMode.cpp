@@ -82,13 +82,14 @@ void ARodnelpsGameMode::HandleMatchHasEnded()
 
 void ARodnelpsGameMode::OnExitMap()
 {
-	for (auto player : m_PlayersArray)
-	{
-		if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
-		{
-			playerController->ConsoleCommand("servertravel/Game/Maps/Test/Lobby");
-		}
-	}
+	//for (auto player : m_PlayersArray)
+	//{
+	//	if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
+	//	{
+	//		playerController->ConsoleCommand("servertravel/Game/Maps/Test/Lobby");
+	//	}
+	//}
+	GetWorld()->ServerTravel("/Game/Maps/Test/Lobby");
 }
 
 
@@ -204,14 +205,17 @@ void ARodnelpsGameMode::gameSummary()
 	EndMatch();
 }
 
+void ARodnelpsGameMode::addPointsToHost(int32 points)
+{
+	m_PlayersArray[0]->addVictoryPoints(points);
+}
+
 void ARodnelpsGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	
 	s_IdCounter = 0;
 }
-
-
 
 int32 ARodnelpsGameMode::getPlayerCardSum(ARodnelpsPlayerState* player)
 {
