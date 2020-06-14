@@ -47,7 +47,13 @@ protected:
 	
 	ARodnelpsPlayerState* m_ActivePlayer;
 
+	
+
 private:
+
+	UFUNCTION()
+	void OnExitMap();
+
 	int32 getPlayerCardSum(ARodnelpsPlayerState* player);
 	void UpdateScoreTable();
 
@@ -56,5 +62,7 @@ private:
 	float m_Time;
 	
 	int32 m_PlayerNumber;
+
+	FTimerHandle EndGameTimer;
 	
 };

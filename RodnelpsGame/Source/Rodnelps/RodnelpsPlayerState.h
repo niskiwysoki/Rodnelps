@@ -92,6 +92,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void broadcast_showMessageOnCenterOfScreen(const FString& message, float messageTime);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void broadcast_generateInfoOnchat();
+	
+	void generateInfoOnchat();
+
+
 private:
 	UFUNCTION(Server, WithValidation, Reliable)
 	void endTurn();
@@ -105,10 +111,14 @@ protected:
 private:
 	ETokenColor m_FirstTokenTakenColor;
 	ETokenColor m_SecondTokenTakenColor;
-	bool m_AreTokensDrawn;
-	bool m_isTakingTokens;
 
 	int32 m_VictoryPoints;
+
+	UPROPERTY(Replicated)
+	bool m_isTakingTokens;
+
+	UPROPERTY(Replicated)
+	bool m_AreTokensDrawn;
 
 	UPROPERTY(Replicated)
 	bool m_isTakingTrader;

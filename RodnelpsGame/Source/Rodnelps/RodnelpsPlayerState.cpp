@@ -12,12 +12,9 @@
 #include "Net/UnrealNetwork.h"
 #include "RodnelpsPlayerController.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "Engine/Engine.h"
 
 ARodnelpsPlayerState::ARodnelpsPlayerState()
 {
-	//TODO delete later
-	PrimaryActorTick.bCanEverTick = true;	
 
 	m_FirstTokenTakenColor = ETokenColor::MAX_COLOURS;
 	m_SecondTokenTakenColor = ETokenColor::MAX_COLOURS;
@@ -55,11 +52,6 @@ void ARodnelpsPlayerState::BeginPlay()
 	}
 }
 
-void ARodnelpsPlayerState::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	GEngine->AddOnScreenDebugMessage(m_PlayerId,0,FColor::Red,UKismetStringLibrary::Conv_IntToString(getTokenNum()));
-}
 
 void ARodnelpsPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
@@ -170,8 +162,6 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 		}
 	}
 
-	generateInfoOnchat();
-
 	if (bResetAndEndTurn)
 	{
 		resetTokenStatusAndEndTurn(gamestate);
@@ -223,7 +213,6 @@ void ARodnelpsPlayerState::removeToken(AToken* token)
 
 	if(!HasAuthority())
 		Server_removeToken(token);
-	generateInfoOnchat();
 }
 
 void ARodnelpsPlayerState::resetTokenStatusAndEndTurn(ARodnelpsGameState* gamestate)
@@ -421,7 +410,6 @@ void ARodnelpsPlayerState::reserveCard_Implementation(ACard* card)
 	}
 
 	gamestate->getGameElementGenerator()->placeNewCard(card);
-	broadcast_generateInfoOnchat();
 
 	if (getTokenNum() > 10)
 	{

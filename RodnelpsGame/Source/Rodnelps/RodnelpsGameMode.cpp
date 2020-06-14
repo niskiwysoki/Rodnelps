@@ -77,6 +77,11 @@ void ARodnelpsGameMode::HandleMatchHasStarted()
 void ARodnelpsGameMode::HandleMatchHasEnded()
 {
 	Super::HandleMatchHasEnded();
+	GetWorld()->GetTimerManager().SetTimer(EndGameTimer, this, &ARodnelpsGameMode::OnExitMap, 3, false);
+}
+
+void ARodnelpsGameMode::OnExitMap()
+{
 	for (auto player : m_PlayersArray)
 	{
 		if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
@@ -205,6 +210,8 @@ void ARodnelpsGameMode::PostInitializeComponents()
 	
 	s_IdCounter = 0;
 }
+
+
 
 int32 ARodnelpsGameMode::getPlayerCardSum(ARodnelpsPlayerState* player)
 {
