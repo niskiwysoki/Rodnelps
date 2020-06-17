@@ -16,6 +16,8 @@ class RODNELPS_API ARodnelpsGameMode : public AGameMode
 
 public:
 
+	ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer);
+
 	virtual void BeginPlay() override;
 
 	// WE override this only because it's called before any other BeginPlay
@@ -31,7 +33,7 @@ public:
 
 	void setActivePlayer(ARodnelpsPlayerState* player);
 
-	void setNextActivePlayer();
+	void setNextActivePlayer();      
 	void endTurn();
 	void gameSummary();
 	

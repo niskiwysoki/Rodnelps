@@ -152,7 +152,6 @@ void ARodnelpsPlayerState::addStandardToken(AToken* token)
 		m_AreTokensDrawn = true;
 		if (getTokenNum() <= 10)
 		{
-			sendGuideMessage(FString::FromInt(getTokenNum()) + TEXT(" : No tokens left"));
 			bResetAndEndTurn = true;
 		}
 		else

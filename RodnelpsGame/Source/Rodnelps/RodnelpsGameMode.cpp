@@ -10,12 +10,19 @@
 #include "Misc/DefaultValueHelper.h"
 
 
-void ARodnelpsGameMode::BeginPlay()
+ARodnelpsGameMode::ARodnelpsGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	Super::BeginPlay();
+	//setup defaults
 	m_Time = 0;
 	m_IsLastRound = false;
 	PrimaryActorTick.bCanEverTick = true;
+	m_PlayerNumber = 1;
+}
+
+void ARodnelpsGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
 	FDefaultValueHelper::ParseInt(UGameplayStatics::ParseOption(OptionsString, "NumberOfPlayers"), m_PlayerNumber);
 	if (ARodnelpsGameState* gameState = GetWorld()->GetGameState<ARodnelpsGameState>())
 	{
@@ -82,13 +89,6 @@ void ARodnelpsGameMode::HandleMatchHasEnded()
 
 void ARodnelpsGameMode::OnExitMap()
 {
-	//for (auto player : m_PlayersArray)
-	//{
-	//	if (APlayerController* playerController = Cast<APlayerController>(player->GetOwner()))
-	//	{
-	//		playerController->ConsoleCommand("servertravel/Game/Maps/Test/Lobby");
-	//	}
-	//}
 	GetWorld()->ServerTravel("/Game/Maps/Test/Lobby");
 }
 
