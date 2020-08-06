@@ -11,7 +11,7 @@
 ARodnelpsGameState::ARodnelpsGameState()
 {
 	m_ActivePlayer = nullptr;
-	m_NumberOfPlayers = 1;
+	m_NumberOfPlayers = -1;
 }
 
 ARodnelpsPlayerState* ARodnelpsGameState::getActivePlayer()
